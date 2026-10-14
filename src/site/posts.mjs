@@ -3,6 +3,7 @@
    "## " = heading, lines starting "- " = bullet list. cta is the Bookable page the post links to. */
 
 import { MORE } from './posts-more.mjs';
+import { EXTRA } from './posts-extra.mjs';
 
 const BASE = [
   {
@@ -458,7 +459,7 @@ Honest times and clear prices help clients book and help you plan your day. In B
   },
 ];
 
-export const POSTS = [...BASE, ...MORE];
+export const POSTS = [...BASE, ...MORE, ...EXTRA];
 
 /* Metadata only (used by the Worker, which decides what is live). */
 export const POST_META = POSTS.map(({ slug, date, time, title, description }) => ({ slug, date, time: time || '09:00', title, description }));
