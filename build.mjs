@@ -62,6 +62,8 @@ if (fs.existsSync(ogDir)) for (const f of fs.readdirSync(ogDir).filter(f => f.en
 const NAV = [['/barbers/', 'Barbers'], ['/nail-technicians/', 'Nail technicians'], ['/dog-walkers/', 'Dog walkers'], ['/blog/', 'Blog'], ['/pricing/', 'Pricing']];
 const stripTags = s => String(s).replace(/<[^>]+>/g, '');
 const abs = p => SITE + p;
+/* the blog's main home is the GitHub Pages copy (one copy for Google to rank); blog pages on this server point their canonical there */
+const pageUrl = p => (cfg.blogCanonical && typeof p === 'string' && p.startsWith('/blog/')) ? cfg.blogCanonical.replace(/\/$/, '') + p : abs(p);
 const ogName = p => (p.path === '/' ? 'home' : p.path.replace(/\//g, ''));
 
 const iconHead = `<link rel="icon" href="/favicon.ico" sizes="32x32"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="${cfg.themeColor}">`;
@@ -74,7 +76,7 @@ function crumbsHtml(page) {
   return `<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><span aria-current="page">${esc(page.nav)}</span></li></ol></nav>`;
 }
 function graph(page) {
-  const url = abs(page.path), g = [];
+  const url = pageUrl(page.path), g = [];
   const org = { '@type': 'Organization', '@id': SITE + '/#organization', name: cfg.name, url: SITE + '/', logo: { '@type': 'ImageObject', url: abs('/icon-512.png'), width: 512, height: 512 } };
   const site = { '@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: cfg.name, inLanguage: 'en-GB', publisher: { '@id': SITE + '/#organization' } };
   const web = { '@type': 'WebPage', '@id': url + '#webpage', url, name: page.title, description: page.description, inLanguage: 'en-GB', isPartOf: { '@id': SITE + '/#website' }, primaryImageOfPage: { '@type': 'ImageObject', url: abs(OG[ogName(page)] || '') } };
@@ -94,7 +96,7 @@ function graph(page) {
 }
 
 function layout(page, body, { indexable = true } = {}) {
-  const url = abs(page.path || '/'), og = OG[ogName(page)] || OG.home, ogAlt = page.ogTitle ? stripTags(page.ogTitle).replace(/\n/g, ' ') + ' - Bookable' : 'Bookable: bookings for one-person businesses';
+  const url = pageUrl(page.path || '/'), og = OG[ogName(page)] || OG.home, ogAlt = page.ogTitle ? stripTags(page.ogTitle).replace(/\n/g, ' ') + ' - Bookable' : 'Bookable: bookings for one-person businesses';
   const nav = NAV.map(([h, l]) => `<a href="${h}"${page.path === h ? ' aria-current="page"' : ''}>${l}</a>`).join('');
   return `<!doctype html>
 <html lang="en-GB">

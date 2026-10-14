@@ -1,5 +1,6 @@
 {
   "name": "Bookable",
   "url": "https://pencil-booking.pencil-booking.workers.dev",
-  "themeColor": "#f3f8fb"
+  "themeColor": "#f3f8fb",
+  "blogCanonical": "https://spirestudio.github.io/bookable"
 }

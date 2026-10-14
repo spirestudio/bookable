@@ -29,7 +29,8 @@ for (const f of htmlFiles) {
     ok(!titles.has(title), `${r}: duplicate title`); titles.add(title);
     ok(!descs.has(desc), `${r}: duplicate description`); descs.add(desc);
     const canon = (h.match(/<link rel="canonical" href="([^"]*)"/) || [])[1];
-    ok(canon === SITE + (r === '/index.html' ? '/' : r.replace(/index\.html$/, '')), `${r}: canonical (${canon})`);
+    const want = r === '/index.html' ? '/' : r.replace(/index\.html$/, ''), home = (/^\/blog\//.test(want) && cfg.blogCanonical) ? cfg.blogCanonical.replace(/\/$/, '') : SITE;
+    ok(canon === home + want, `${r}: canonical (${canon})`);
     const hs = [...h.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/g)].map(m => m[1].replace(/<[^>]+>/g, '').trim());
     ok(hs.length === 1, `${r}: exactly one h1 (${hs.length})`); ok(!h1s.has(hs[0]), `${r}: duplicate h1`); h1s.add(hs[0]);
     for (const k of ['og:title', 'og:description', 'og:url', 'og:image', 'og:image:alt', 'twitter:card', 'twitter:image']) ok(h.includes(k), `${r}: missing ${k}`);
