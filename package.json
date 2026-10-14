@@ -1,0 +1,23 @@
+{
+  "name": "pencil-booking",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bookable: booking pages for solo barbers, nail technicians and dog walkers.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs && wrangler dev --local --port 8787",
+    "audit": "node audit.mjs",
+    "test": "node tests/api.test.mjs",
+    "migrate": "wrangler d1 migrations apply pencil-db --remote",
+    "deploy": "node build.mjs && node audit.mjs && wrangler d1 migrations apply pencil-db --remote && wrangler deploy",
+    "backup": "node tools/backup.mjs"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "esbuild": "^0.25.0",
+    "jsdom": "^30.1.2",
+    "sharp": "^0.35.5",
+    "wrangler": "^4.149.0"
+  }
+}

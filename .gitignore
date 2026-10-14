@@ -1,0 +1,14 @@
+node_modules/
+dist/
+pages-dist/
+public-repo/
+.wrangler/
+.dev.vars
+.env
+*.local
+backups/
+.admin-code*.txt
+.telegram-*.txt
+.passcode*.txt
+*.mp4
+*.zip
