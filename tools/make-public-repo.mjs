@@ -25,7 +25,7 @@ put('wrangler.jsonc', read('wrangler.jsonc').replace(/("database_id":\s*")[^"]+(
 put('.gitignore', `node_modules/\ndist/\npages-dist/\npublic-repo/\n.wrangler/\n.dev.vars\n.env\n*.local\nbackups/\n.admin-code*.txt\n.telegram-*.txt\n.passcode*.txt\n*.mp4\n*.zip\n`);
 put('.nojekyll', '');
 
-const SITE = 'https://pencil-booking.pencil-booking.workers.dev', BLOG = 'https://spirestudio.github.io/bookable/blog/';
+const SITE = 'https://mybookable.co.uk', BLOG = 'https://mybookable.co.uk/blog/';
 put('README.md', `# Bookable: free booking app for barbers, nail technicians and dog walkers
 
 **Bookable** is a UK booking app for solo businesses that take appointments by message. It gives a barber, nail technician or dog walker **one booking link for their Instagram bio and WhatsApp**, a calendar that stops double-bookings, deposits that cut no-shows, and reminders written and ready to send.

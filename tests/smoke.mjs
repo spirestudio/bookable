@@ -1,6 +1,6 @@
 /* Smoke test for the LIVE site. Creates a throwaway account, books a time, then deletes everything it made.
    Run: node tests/smoke.mjs   (BASE=https://... to point somewhere else) */
-const BASE = process.env.BASE || 'https://pencil-booking.pencil-booking.workers.dev';
+const BASE = process.env.BASE || 'https://mybookable.co.uk';
 let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log(c ? 'ok  ' : 'FAIL', m); };
 let cookie = '';
 const call = async (method, p, body) => {

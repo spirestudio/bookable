@@ -13,6 +13,8 @@ const ORIGIN = (process.env.PAGES_ORIGIN || 'https://spirestudio.github.io').rep
 const BASE = '/' + (process.env.PAGES_BASE ?? '/bookable').replace(/^\/+|\/+$/g, '');
 const cfg = JSON.parse(fs.readFileSync('site.config.json', 'utf8')), LIVE = cfg.url.replace(/\/$/, '');
 const SELF = ORIGIN + (BASE === '/' ? '' : BASE), PFX = BASE === '/' ? '' : BASE;
+/* when the main site has its own domain, this GitHub copy is only a mirror: canonicals and absolute links keep pointing at the main domain */
+const MIRROR = !/workers\.dev/.test(LIVE);
 const SRC = 'dist', OUT = 'pages-dist';
 const LIVE_ONLY = /^\/(app|find|client|admin|api)(\/|$|\?|#)/;
 
@@ -37,8 +39,10 @@ const rssDate = p => new Date(`${p.date}T${p.time}:00Z`).toUTCString();
 const local = p => LIVE_ONLY.test(p) ? LIVE + p : PFX + p;
 function rewrite(text, kind) {
   /* absolute links to the live site: app pages stay there, everything else becomes this site */
+  if (!MIRROR) {
   text = text.split(LIVE).join('@@LIVE@@');
   text = text.replace(/@@LIVE@@(\/[^"'\s<>)]*)?/g, (m, p) => { p = p || '/'; return LIVE_ONLY.test(p) ? LIVE + p : SELF + p; });
+  }
   if (kind === 'html') {
     text = text.replace(/<link rel="manifest"[^>]*>/g, '');
     text = text.replace(/\b(href|src|action)="(\/(?!\/)[^"]*)"/g, (m, a, p) => `${a}="${local(p)}"`);
@@ -81,14 +85,15 @@ copy(SRC);
   const xml = fs.readFileSync(path.join(SRC, 'sitemap.xml'), 'utf8').replace('<!--BLOGURLS-->', live.map(p => `  <url><loc>${LIVE}/blog/${p.slug}/</loc><lastmod>${p.date}</lastmod></url>`).join('\n'));
   const out = rewrite(xml, 'text').split('\n').filter(l => !l.includes('<loc>') || (l.includes(SELF) && !LIVE_ONLY.test(l.match(/<loc>([^<]+)</)[1].slice(SELF.length)))).join('\n');
   fs.writeFileSync(path.join(OUT, 'sitemap.xml'), out);
+  if (MIRROR) fs.rmSync(path.join(OUT, 'sitemap.xml'));
 }
 /* RSS feed (helps readers, aggregators and crawlers notice new posts) */
 fs.writeFileSync(path.join(OUT, 'rss.xml'), `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"><channel><title>Bookable blog</title><link>${SELF}/blog/</link><description>Practical advice for barbers, nail technicians and dog walkers on bookings, no-shows and getting more clients.</description><language>en-gb</language>
-${live.slice(0, 30).map(p => `<item><title>${esc(p.title)}</title><link>${SELF}/blog/${p.slug}/</link><guid>${SELF}/blog/${p.slug}/</guid><pubDate>${rssDate(p)}</pubDate><description>${esc(p.description || '')}</description></item>`).join('\n')}
+<rss version="2.0"><channel><title>Bookable blog</title><link>${MIRROR ? LIVE : SELF}/blog/</link><description>Practical advice for barbers, nail technicians and dog walkers on bookings, no-shows and getting more clients.</description><language>en-gb</language>
+${live.slice(0, 30).map(p => `<item><title>${esc(p.title)}</title><link>${MIRROR ? LIVE : SELF}/blog/${p.slug}/</link><guid>${MIRROR ? LIVE : SELF}/blog/${p.slug}/</guid><pubDate>${rssDate(p)}</pubDate><description>${esc(p.description || '')}</description></item>`).join('\n')}
 </channel></rss>
 `);
-fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SELF}/sitemap.xml\n`);
+fs.writeFileSync(path.join(OUT, 'robots.txt'), MIRROR ? `User-agent: *\nAllow: /\n` : `User-agent: *\nAllow: /\n\nSitemap: ${SELF}/sitemap.xml\n`);
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
 /* checks: every local link must exist, nothing may point at a host root, no unreleased post may be present */

@@ -2,8 +2,8 @@
 
 **Bookable** is a UK booking app for solo businesses that take appointments by message. It gives a barber, nail technician or dog walker **one booking link for their Instagram bio and WhatsApp**, a calendar that stops double-bookings, deposits that cut no-shows, and reminders written and ready to send.
 
-- **Try it free for 7 days:** https://pencil-booking.pencil-booking.workers.dev
-- **Read the blog (practical booking advice for one-person businesses):** https://spirestudio.github.io/bookable/blog/
+- **Try it free for 7 days:** https://mybookable.co.uk
+- **Read the blog (practical booking advice for one-person businesses):** https://mybookable.co.uk/blog/
 - Then £14.99 a month. No booking fees, no contract.
 
 ## What it does
