@@ -67,7 +67,7 @@ export const pages = [
   <div class="wrap">
     <div>
       <h1>Never miss a call.</h1>
-      <p class="lede">Bookable gives barbers, nail technicians and dog walkers one booking link for their Instagram bio and WhatsApp, a calendar that knows when they are free, and reminders written and ready to send.</p>
+      <p class="lede">Bookable gives any business one booking link for their Instagram bio and WhatsApp, a calendar that knows when they are free, and reminders written and ready to send.</p>
       <div class="ctas"><a class="btn accent" href="/app/#/signup">Try Bookable free</a><a class="btn ghost" href="#how">See how it works</a></div>
       <p class="note fine" style="margin-top:18px">7 days free, then £14.99 a month. Cancel any time. No card needed while Bookable is in early access.</p>
       <form class="herosearch" action="/find/" method="get" role="search">

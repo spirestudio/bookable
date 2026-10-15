@@ -11,7 +11,7 @@ const mode = process.argv[2] || 'stills', VID = process.argv[3] || '1';
 const EDGE = ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(p => fs.existsSync(p));
 const FILES = {
   '/': [path.join(HERE, 'index.html'), 'text/html'], '/favicon.svg': [path.join(ROOT, 'src/static/favicon.svg'), 'image/svg+xml'],
-  '/img/phone-barber.webp': [path.join(ROOT, 'src/static/img/phone-barber.webp'), 'image/webp'], '/img/home-dashboard.webp': [path.join(ROOT, 'src/static/img/home-dashboard.webp'), 'image/webp'],
+  '/img/phone-barber.webp': [path.join(ROOT, 'src/static/img/phone-barber.webp'), 'image/webp'], '/img/home-dashboard.webp': [path.join(ROOT, 'src/static/img/home-dashboard.webp'), 'image/webp'], '/img/home-calendar.webp': [path.join(ROOT, 'src/static/img/home-calendar.webp'), 'image/webp'],
   '/mp4-muxer.js': [path.join(HERE, 'node_modules/mp4-muxer/build/mp4-muxer.js'), 'text/javascript'],
   '/inter.woff2': [path.join(ROOT, 'node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2'), 'font/woff2'],
 };
@@ -48,7 +48,7 @@ try {
   } else {
     const out = await evalJs('window.BookablePromo.encode()');
     const ext = out.type.includes('mp4') ? 'mp4' : 'webm';
-    fs.writeFileSync(path.join(HERE, `bookable-${VID === '1' ? 'intro' : VID === '2' ? 'security' : 'pricing'}.${ext}`), Buffer.from(out.data, 'base64'));
+    fs.writeFileSync(path.join(HERE, `bookable-${({ 1: 'intro', 2: 'security', 3: 'pricing', 4: 'before-after', 5: 'while-you-sleep', 6: 'no-shows' })[VID]}.${ext}`), Buffer.from(out.data, 'base64'));
     console.log('recorded', out.type, ext);
   }
 } finally { try { ws?.close(); } catch { /* ignore */ } edge.kill(); server.close(); }

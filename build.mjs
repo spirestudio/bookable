@@ -59,7 +59,7 @@ const ogDir = path.join(staticDir, 'og');
 if (fs.existsSync(ogDir)) for (const f of fs.readdirSync(ogDir).filter(f => f.endsWith('.png'))) OG[f.replace('.png', '')] = emit('og-' + f.replace('.png', ''), '.png', fs.readFileSync(path.join(ogDir, f)));
 
 /* ---------- html ---------- */
-const NAV = [['/barbers/', 'Barbers'], ['/nail-technicians/', 'Nail technicians'], ['/dog-walkers/', 'Dog walkers'], ['/blog/', 'Blog'], ['/pricing/', 'Pricing']];
+const NAV = [['/#what', 'Features'], ['/#how', 'How it works'], ['/blog/', 'Blog'], ['/pricing/', 'Pricing']];
 const stripTags = s => String(s).replace(/<[^>]+>/g, '');
 const abs = p => SITE + p;
 /* the blog's main home is the GitHub Pages copy (one copy for Google to rank); blog pages on this server point their canonical there */

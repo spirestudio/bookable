@@ -25,7 +25,7 @@ a{color:#fff}
 
   function load(name, src) { return new Promise(function (res, rej) { var i = new Image(); i.onload = function () { imgs[name] = i; res(); }; i.onerror = rej; i.src = src; }); }
   var ready = Promise.all([
-    load('logo', '/favicon.svg'), load('phone', '/img/phone-barber.webp'), load('dash', '/img/home-dashboard.webp'),
+    load('logo', '/favicon.svg'), load('cal', '/img/home-calendar.webp'), load('phone', '/img/phone-barber.webp'), load('dash', '/img/home-dashboard.webp'),
     new FontFace('Inter', 'url(/inter.woff2)', { weight: '100 900' }).load().then(function (f) { document.fonts.add(f); })
   ]);
 
@@ -246,7 +246,138 @@ a{color:#fff}
     else if (t < 12.9) { v3Paywall(t - 10.4); var w = easeInOut(prog(t - 10.4, 0, 0.5)); if (w < 1) { ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H * (1 - w)); } }
     else sceneCta(t);
   }
-  function frame(t) { (V === '2' ? frame2 : V === '3' ? frame3 : frame1)(t); }
+
+  /* ---------- videos 4, 5, 6: before/after, booked while you slept, no-shows ---------- */
+  function rnd(i) { var x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+  function bubble(x, y, w, hgt, col, tcol, str, size, alpha, rot) {
+    ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x + w / 2, y + hgt / 2); ctx.rotate(rot || 0); ctx.translate(-w / 2, -hgt / 2);
+    ctx.shadowColor = 'rgba(0,0,0,.18)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6; rr(0, 0, w, hgt, 34); ctx.fillStyle = col; ctx.fill(); ctx.shadowColor = 'transparent';
+    text(str, 34, hgt / 2 + size * 0.34, size, tcol, 600, 'left'); ctx.restore();
+  }
+  var DMS = ['Are you free Saturday?', 'hello??', 'can I move to 3?', 'who is this lol', 'did u get my msg', 'what time was it again', 'Any space today?', 'sorry running late!!', 'u there?', 'how much for a fade'];
+  function v4Before(t) {
+    ctx.fillStyle = '#dcd8d1'; ctx.fillRect(0, 0, W, H);
+    /* messy paper diary */
+    ctx.save(); ctx.translate(560, 1180); ctx.rotate(0.07); ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 14; ctx.fillStyle = '#fffdf4'; ctx.fillRect(-300, -380, 600, 760); ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = 'rgba(80,110,160,.35)'; ctx.lineWidth = 2; for (var r = 0; r < 14; r++) { ctx.beginPath(); ctx.moveTo(-300, -330 + r * 52); ctx.lineTo(300, -330 + r * 52); ctx.stroke(); }
+    var names = ['Dave 10?', 'Sam ?? 11', 'Mo 11.30', 'Kai (moved)', 'new guy 1', 'Dan 2??', 'Jay no show', 'Lee 3.30', '??? 4'];
+    names.forEach(function (n, i) { var p = clamp((t - 0.5 - i * 0.25) / 0.25, 0, 1); if (p <= 0) return; ctx.save(); ctx.globalAlpha = p; ctx.translate(-260 + rnd(i) * 40, -300 + i * 62); ctx.rotate((rnd(i + 9) - 0.5) * 0.08); text(n, 0, 0, 40, '#2b3a55', 500, 'left'); if (i % 3 === 1) { ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-8, -14); ctx.lineTo(220, -10); ctx.stroke(); } ctx.restore(); });
+    ctx.restore();
+    /* DMs pile up */
+    DMS.forEach(function (m, i) {
+      var a = 0.35 + i * 0.5, p = easeBack(prog(t, a, a + 0.3)); if (p <= 0) return;
+      var left = i % 2 === 0, w = 120 + m.length * 24, x = left ? 50 + rnd(i) * 120 : W - w - 50 - rnd(i + 3) * 120, y = 380 + (i % 5) * 150 + rnd(i + 5) * 90;
+      ctx.save(); ctx.translate(x + w / 2, y + 40); ctx.scale(p, p); ctx.translate(-(x + w / 2), -(y + 40)); bubble(x, y, w, 80, left ? '#fff' : '#d8f3c9', '#1d2b36', m, 38, 1, (rnd(i + 2) - 0.5) * 0.08); ctx.restore();
+    });
+    /* label + unread badge */
+    rr(70, 150, 380, 140, 24); ctx.fillStyle = '#c0392b'; ctx.fill(); text('BEFORE', 260, 250, 78, '#fff', 800, 'center');
+    var cnt = Math.floor(3 + 44 * easeOut(prog(t, 0.3, 5.6)));
+    ctx.save(); ctx.beginPath(); ctx.arc(W - 150, 220, 74, 0, Math.PI * 2); ctx.fillStyle = '#e74c3c'; ctx.fill(); text(String(cnt), W - 150, 248, 76, '#fff', 800, 'center'); ctx.restore();
+    text('unread', W - 150, 340, 36, '#7a2a22', 700, 'center');
+    text('Your diary lives in your DMs.', W / 2, 1790, 58, '#2a2a2a', 800, 'center', easeOut(prog(t, 3.8, 4.4)));
+  }
+  function v4After(l) {
+    ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
+    rr(70, 150, 340, 140, 24); ctx.fillStyle = RED; ctx.fill(); text('AFTER', 240, 250, 78, '#fff', 800, 'center');
+    ctx.save(); ctx.beginPath(); ctx.arc(W - 150, 220, 74, 0, Math.PI * 2); ctx.fillStyle = '#1d6b43'; ctx.fill(); text('0', W - 150, 250, 86, '#fff', 800, 'center'); ctx.restore();
+    text('unread', W - 150, 340, 36, '#1d6b43', 700, 'center');
+    maskLine('One link in your bio.', 80, 520, 74, INK, 0.0, l);
+    maskLine('Clients book themselves.', 80, 610, 74, RED, 0.12, l);
+    var p = easeOut(prog(l, 0.4, 1.2)), cw = 940, ch = cw * 956 / 1600;
+    shadowCard(70, 760 + (1 - p) * 120, cw, ch, 26, function (w, hh) { ctx.drawImage(imgs.cal, 0, 0, w, hh); }, 0);
+    ['Sam booked: skin fade  ✓', 'Mo booked: haircut  ✓', 'Kai booked: beard trim  ✓'].forEach(function (s, i) {
+      var a = 1.4 + i * 0.7, q = easeBack(prog(l, a, a + 0.35)); if (q <= 0) return;
+      ctx.save(); ctx.translate(W / 2, 1450 + i * 120); ctx.scale(q, q); rr(-420, -46, 840, 92, 24); ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(12,31,44,.2)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 8; ctx.fill(); ctx.shadowColor = 'transparent'; text(s, -380, 14, 42, INK, 700, 'left'); ctx.restore();
+    });
+  }
+  function frame4(t) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (t < 6.2) v4Before(t);
+    else if (t < 6.9) { v4Before(Math.min(t, 6.2)); var p = easeInOut(prog(t, 6.2, 6.9)); ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W * p, H); ctx.clip(); v4After(0); ctx.restore(); ctx.fillStyle = '#fff'; ctx.fillRect(W * p - 6, 0, 12, H); }
+    else if (t < 12.9) v4After(t - 6.9);
+    else sceneCta(t);
+  }
+
+  function stars(a) { for (var i = 0; i < 70; i++) { var tw = 0.5 + 0.5 * Math.sin(i + a * 2); ctx.fillStyle = 'rgba(255,255,255,' + (0.25 + 0.6 * tw * rnd(i + 40)) + ')'; ctx.fillRect(rnd(i) * W, rnd(i + 70) * 900, 4, 4); } }
+  function notif(y, i, p, l, a, b, c) {
+    ctx.save(); ctx.globalAlpha = clamp(p * 1.4, 0, 1); ctx.translate(0, (1 - p) * -260); ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 14; rr(70, y, 940, 180, 34); ctx.fillStyle = 'rgba(255,255,255,.96)'; ctx.fill(); ctx.shadowColor = 'transparent';
+    ctx.drawImage(imgs.logo, 106, y + 38, 104, 104); text('Bookable · now', 240, y + 62, 34, MUTED, 600, 'left'); text(a, 240, y + 112, 46, INK, 800, 'left'); text(b, 240, y + 158, 36, MUTED, 500, 'left'); ctx.restore();
+  }
+  function v5Night(l) {
+    var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#050f18'); g.addColorStop(1, '#0d3350'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    stars(l);
+    ctx.fillStyle = '#e9f1f7'; ctx.beginPath(); ctx.arc(860, 230, 80, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#0a2236'; ctx.beginPath(); ctx.arc(895, 205, 74, 0, Math.PI * 2); ctx.fill();
+    text('11:48 pm', 80, 210, 128, '#fff', 800, 'left');
+    text('You are asleep.', 84, 300, 54, 'rgba(255,255,255,.65)', 600, 'left', easeOut(prog(l, 0.2, 0.7)));
+    var zz = 0.5 + 0.5 * Math.sin(l * 3); text('z', 660, 330 - zz * 10, 60, 'rgba(255,255,255,.5)', 700, 'left'); text('z', 710, 300 - zz * 14, 80, 'rgba(255,255,255,.6)', 700, 'left');
+    var items = [['New booking: Skin fade', 'Saturday 10:00 · £22'], ['New booking: Haircut', 'Saturday 10:45 · £18'], ['New booking: Beard trim', 'Saturday 11:30 · £10']];
+    items.forEach(function (it, i) { var a = 0.9 + i * 0.95, p = easeBack(prog(l, a, a + 0.5)); if (p > 0) notif(480 + i * 215, i, p, l, it[0], it[1]); });
+    var n = l < 0.9 ? 0 : l < 1.85 ? 1 : l < 2.8 ? 2 : 3;
+    text(n + ' booked', W / 2, 1380, 150, '#fff', 800, 'center', easeOut(prog(l, 0.9, 1.3)));
+    text('and you did nothing.', W / 2, 1470, 56, 'rgba(255,255,255,.7)', 600, 'center', easeOut(prog(l, 3.0, 3.6)));
+  }
+  function v5Morning(l) {
+    var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#ffe9c7'); g.addColorStop(1, CREAM); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ffc857'; ctx.beginPath(); ctx.arc(850, 230, 90 + Math.sin(l * 2) * 3, 0, Math.PI * 2); ctx.fill();
+    text('7:02 am', 80, 210, 128, INK, 800, 'left');
+    maskLine('Wake up to this.', 84, 400, 100, RED, 0.1, l);
+    var rows = [['10:00', 'Skin fade', '£22'], ['10:45', 'Haircut', '£18'], ['11:30', 'Beard trim', '£10']];
+    rows.forEach(function (r, i) {
+      var a = 0.6 + i * 0.45, q = easeOut(prog(l, a, a + 0.5)); ctx.save(); ctx.globalAlpha = q; ctx.translate((1 - q) * 120, 0);
+      ctx.shadowColor = 'rgba(12,31,44,.18)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 10; rr(80, 560 + i * 190, 920, 160, 28); ctx.fillStyle = '#fff'; ctx.fill(); ctx.shadowColor = 'transparent';
+      text(r[0], 130, 660 + i * 190, 62, RED, 800, 'left'); text(r[1], 380, 656 + i * 190, 52, INK, 700, 'left'); text(r[2], 940, 656 + i * 190, 52, INK, 800, 'right');
+      ctx.beginPath(); ctx.arc(830, 640 + i * 190, 0, 0, 0); ctx.restore();
+    });
+    var tq = easeBack(prog(l, 2.1, 2.7)); ctx.save(); ctx.translate(W / 2, 1380); ctx.scale(Math.max(tq, 0.001), Math.max(tq, 0.001)); rr(-420, -90, 840, 180, 32); ctx.fillStyle = RED; ctx.fill(); text('£50 booked overnight', 0, 22, 66, '#fff', 800, 'center'); ctx.restore();
+    text('(an example night)', W / 2, 1530, 34, MUTED, 500, 'center', easeOut(prog(l, 2.6, 3.0)));
+  }
+  function frame5(t) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (t < 6.4) v5Night(t);
+    else if (t < 7.0) { v5Night(Math.min(t, 6.4)); ctx.save(); ctx.globalAlpha = easeInOut(prog(t, 6.4, 7.0)); v5Morning(0); ctx.restore(); }
+    else if (t < 12.9) v5Morning(t - 7.0);
+    else sceneCta(t);
+  }
+
+  function slotGrid(l, mode) {
+    /* mode 0: busy diary then no-shows; mode 1: deposits fix it */
+    var slots = [['9:00', 'Sam'], ['10:00', 'Mo'], ['11:00', 'Kai'], ['12:00', 'Dan'], ['1:00', 'Jay'], ['2:00', 'Lee']], gone = [1, 3, 4];
+    slots.forEach(function (s, i) {
+      var y = 560 + i * 150, a = 0.3 + i * 0.12, p = easeOut(prog(l, a, a + 0.35)); ctx.save(); ctx.globalAlpha = p;
+      var isGone = gone.indexOf(i) > -1, bad = !mode && isGone && l > 1.6 + gone.indexOf(i) * 0.7;
+      rr(120, y, 840, 120, 22); ctx.fillStyle = bad ? '#f3d4d0' : (mode && isGone ? '#d8efe0' : '#fff'); ctx.shadowColor = 'rgba(12,31,44,.14)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 6; ctx.fill(); ctx.shadowColor = 'transparent';
+      text(s[0], 160, y + 78, 52, bad ? '#c0392b' : RED, 800, 'left'); text(isGone ? s[1] : s[1] + ' · haircut', 360, y + 76, 48, INK, 600, 'left');
+      if (bad) { var q = easeBack(prog(l, 1.6 + gone.indexOf(i) * 0.7, 1.9 + gone.indexOf(i) * 0.7)); ctx.save(); ctx.translate(880, y + 60); ctx.scale(q, q); ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-26, -26); ctx.lineTo(26, 26); ctx.moveTo(26, -26); ctx.lineTo(-26, 26); ctx.stroke(); ctx.restore(); text('NO SHOW', 800, y + 76, 36, '#c0392b', 800, 'right'); }
+      if (mode && isGone) { var q2 = easeBack(prog(l, 1.0 + gone.indexOf(i) * 0.5, 1.3 + gone.indexOf(i) * 0.5)); ctx.save(); ctx.translate(880, y + 60); ctx.scale(Math.max(q2, 0.001), Math.max(q2, 0.001)); tick(0, 0, 70, '#1d6b43', 12); ctx.restore(); text('£5 deposit paid', 800, y + 76, 36, '#1d6b43', 800, 'right', clamp(q2, 0, 1)); }
+      ctx.restore();
+    });
+  }
+  function v6Loss(l) {
+    ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
+    maskLine('Every no-show', 80, 280, 110, INK, 0.0, l);
+    maskLine('is an empty chair.', 80, 410, 110, RED, 0.12, l);
+    slotGrid(l, 0);
+    var n = l < 1.6 ? 0 : l < 2.3 ? 1 : l < 3.0 ? 2 : 3;
+    text('−£' + (n * 18), W / 2, 1620, 150, n ? '#c0392b' : MUTED, 800, 'center');
+    text('lost this week (an example)', W / 2, 1690, 40, MUTED, 500, 'center', easeOut(prog(l, 2.6, 3.2)));
+  }
+  function v6Fix(l) {
+    ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
+    maskLine('Add a deposit.', 80, 280, 110, INK, 0.0, l);
+    maskLine('Hold the slot.', 80, 410, 110, '#1d6b43', 0.12, l);
+    /* toggle */
+    var tp = easeInOut(prog(l, 0.5, 0.9)); rr(700, 440, 280, 110, 55); ctx.fillStyle = tp > 0.5 ? '#1d6b43' : '#c9d3da'; ctx.fill(); ctx.beginPath(); ctx.arc(755 + tp * 170, 495, 44, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+    slotGrid(l, 1);
+    var q = easeOut(prog(l, 2.3, 2.9)); text('£0 lost', W / 2, 1620, 150, '#1d6b43', 800, 'center', q); text('unpaid holds free themselves up', W / 2, 1690, 40, MUTED, 500, 'center', q);
+  }
+  function frame6(t) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (t < 6.4) v6Loss(t);
+    else if (t < 12.9) { v6Fix(t - 6.4); var w = easeInOut(prog(t - 6.4, 0, 0.45)); if (w < 1) { ctx.save(); ctx.globalAlpha = 1 - w; v6Loss(6.3); ctx.restore(); } }
+    else sceneCta(t);
+  }
+  function frame(t) { (V === '2' ? frame2 : V === '3' ? frame3 : V === '4' ? frame4 : V === '5' ? frame5 : V === '6' ? frame6 : frame1)(t); }
+
 
   /* ---------- sound (all synthesised here, no samples) ---------- */
   function buildAudio(ac, out, t0) {
@@ -263,13 +394,24 @@ a{color:#fff}
     tone(0.15, 90, 1.2, 0.9, 'sine', 38); chime(0.45, 1046); chime(0.62, 1568);
     noise(1.9, 0.7, 400, 7000, 0.3); noise(2.35, 0.5, 6000, 900, 0.2);
     /* beat 2.4 -> 12.9 at 112 bpm */
-    var beat = 60 / 112, bass = [110, 110, 146.8, 130.8];
+    var beat = 60 / (V === '5' ? 80 : V === '6' ? 124 : V === '4' ? 120 : 112), bass = [110, 110, 146.8, 130.8];
     for (var t = 2.4, n = 0; t < 12.9; t += beat, n++) {
       if (n % 1 === 0 && (n % 4 === 0 || n % 4 === 2)) kick(t);
       hat(t + beat / 2, 0.1); if (n % 4 === 1 || n % 4 === 3) noise(t, 0.12, 2400, 1800, 0.12);
       pluck(t, bass[n % 4] * 2);
     }
-    if (V === '2') {
+    if (V === '4') {
+      [0.35, 0.85, 1.35, 1.85, 2.35, 2.85, 3.35, 3.85, 4.35, 4.85].forEach(function (t, i) { tone(t, 700 + (i % 3) * 90, 0.12, 0.22, 'sine'); tone(t, 520, 0.2, 0.08, 'square'); });
+      noise(6.1, 0.8, 300, 7000, 0.35); tone(6.9, 140, 0.5, 0.5, 'sine', 60); chime(6.95, 1046); chime(7.1, 1318); chime(7.25, 1568);
+      [8.4, 9.1, 9.8].forEach(function (t, i) { chime(t, [784, 988, 1175][i]); });
+    } else if (V === '5') {
+      [0.9, 1.85, 2.8].forEach(function (t, i) { chime(t, [659, 784, 988][i]); tone(t, 220, 0.5, 0.18, 'sine'); });
+      noise(6.2, 0.9, 200, 5000, 0.2); chime(7.1, 1046); chime(7.25, 1318); [7.6, 8.05, 8.5].forEach(function (t, i) { tone(t, 900 + i * 100, 0.15, 0.2, 'sine'); }); chime(9.1, 1568); chime(9.25, 2093);
+    } else if (V === '6') {
+      [1.6, 2.3, 3.0].forEach(function (t) { tone(t, 90, 0.35, 0.7, 'sine', 45); noise(t, 0.12, 900, 300, 0.25); });
+      noise(6.2, 0.5, 400, 6000, 0.25); tone(6.9, 880, 0.12, 0.3, 'sine'); tone(6.95, 1320, 0.2, 0.2, 'sine');
+      [7.4, 7.9, 8.4].forEach(function (t, i) { chime(t, [784, 988, 1318][i]); }); chime(8.9, 1046); chime(9.05, 1568); chime(9.2, 2093);
+    } else if (V === '2') {
     /* two logins + two-factor */
     noise(2.4, 0.4, 3000, 200, 0.25); tone(3.2, 880, 0.25, 0.22, 'sine'); chime(3.25, 1318); tone(3.8, 988, 0.25, 0.22, 'sine'); chime(3.85, 1568);
     noise(6.2, 0.4, 500, 6000, 0.25); noise(6.4, 0.35, 6000, 700, 0.18);
