@@ -5,7 +5,7 @@ const FAQ_HOME = [
   ['Do reminders send automatically?', 'Not yet. Bookable writes each message for you and opens WhatsApp with it ready, so it comes from your own number and replies land in your normal chats. Sending automatically needs WhatsApp’s paid business service, which is not part of the £14.99.'],
   ['Where are my bookings stored?', 'On Bookable’s servers, tied to your account, so you can sign in from any phone or computer. Clients book from your link on their own phones and you see it straight away.'],
   ['How much does Bookable cost?', '£14.99 a month after a 7-day free trial, with no contract. No card is taken while Bookable is in early access.'],
-  ['Who is Bookable for?', 'Solo barbers, nail technicians and dog walkers first, because they book by message every day. If you take appointments by DM, it will probably suit you too.'],
+  ['Who is Bookable for?', 'Any business that takes appointments or bookings by message: barbers, nail technicians, dog walkers, tutors, trainers, photographers, cleaners and more. If clients ask you "are you free Saturday?", Bookable is for you.'],
 ];
 
 const FAQ_BARBERS = [
@@ -58,8 +58,8 @@ const tradeHero = (h1, lede, inner) => `
 export const pages = [
   {
     path: '/', file: 'index.html', nav: null,
-    title: 'Bookable: bookings for barbers, nail techs and dog walkers',
-    description: 'One booking link for your Instagram and WhatsApp, a calendar that stops double-booking, and reminders ready to send. £14.99 a month after 7 days free.',
+    title: 'Bookable: a booking link for any business, 7 days free',
+    description: 'Bookable gives any business one booking link for Instagram and WhatsApp, a calendar and ready-to-send reminders. 7 days free, then £14.99 a month.',
     ogTitle: 'Fewer messages.\nFewer missed appointments.',
     faq: FAQ_HOME,
     body: ({ img, faq }) => `
@@ -71,7 +71,7 @@ export const pages = [
       <div class="ctas"><a class="btn accent" href="/app/#/signup">Try Bookable free</a><a class="btn ghost" href="#how">See how it works</a></div>
       <p class="note fine" style="margin-top:18px">7 days free, then £14.99 a month. Cancel any time. No card needed while Bookable is in early access.</p>
       <form class="herosearch" action="/find/" method="get" role="search">
-        <label for="hq">Booking an appointment? Find your barber, nail tech or dog walker.</label>
+        <label for="hq">Booking an appointment? Search for the business you want to book with.</label>
         <div class="box"><input id="hq" type="search" name="q" placeholder="Search by name or town" maxlength="50" autocomplete="off"><button type="submit">Search</button></div>
       </form>
     </div>
@@ -97,7 +97,7 @@ export const pages = [
       <div class="gcard biz">
         <p class="eyebrow">Business</p>
         <h3>I take bookings for my business</h3>
-        <p>Barbers, nail technicians and dog walkers. One booking link, a calendar and reminders. 7 days free.</p>
+        <p>Any business that takes bookings. One booking link, a calendar and reminders. 7 days free.</p>
         <div class="ctas"><a class="btn accent" id="gb-main" href="/app/#/signup">Start free</a><a class="btn ghost" id="gb-alt" href="/app/#/login">Owner login</a></div>
       </div>
     </div>
@@ -173,7 +173,7 @@ export const pages = [
     <p class="eyebrow" style="color:rgba(255,255,255,.65)">How it works</p>
     <h2>Up and running in a few minutes</h2>
     <div class="steps2">
-      <div><b>1</b><h3>Tell Bookable what you do</h3><p>Pick barber, nail technician or dog walker and your services are filled in. Change any name, length or price.</p></div>
+      <div><b>1</b><h3>Tell Bookable what you do</h3><p>Pick your type of business, or choose something else, then add your services. Set any name, length or price.</p></div>
       <div><b>2</b><h3>Share your link</h3><p>Put it in your Instagram bio and send it on WhatsApp when someone asks for a time.</p></div>
       <div><b>3</b><h3>Send the reminders</h3><p>Open Reminders in the morning. Each message is written. Tap Send on the ones you want.</p></div>
     </div>
@@ -398,15 +398,15 @@ ${ctaBand(`Give your clients one link to book`, `Set up your dog walker booking 
 
   {
     path: '/find/', file: 'find/index.html', nav: 'Find a business', scriptName: 'find',
-    title: 'Find a barber, nail technician or dog walker | Bookable',
-    description: 'Search for a local barber, nail technician or dog walker on Bookable and book an appointment online.',
+    title: 'Find a local business and book online | Bookable',
+    description: 'Search for a local business on Bookable and book an appointment online.',
     ogTitle: 'Find your barber.\nBook in a minute.',
     body: ({ crumbs }) => `
 <div class="wrap">${crumbs}</div>
 <section class="hero sub">
   <div class="wrap">
     <p class="eyebrow">Client area</p>
-    <h1>Find your barber, nail tech or dog walker.</h1>
+    <h1>Find a business to book with.</h1>
     <p class="lede">Search, pick a time and you are booked. There is no account or password to set up.</p>
     <ol class="csteps"><li><b>1</b>Search by name, town or trade</li><li><b>2</b>Choose a service and a time</li><li><b>3</b>Add your name and number, and you are booked</li></ol>
     <form id="findform" class="find" role="search" autocomplete="off">
@@ -436,15 +436,15 @@ ${ctaBand(`Give your clients one link to book`, `Set up your dog walker booking 
 
   {
     path: '/blog/', file: 'blog/index.html', nav: 'Blog',
-    title: 'Blog: booking tips for barbers, nail techs and dog walkers | Bookable',
-    description: 'Practical, plain-English advice for solo barbers, nail technicians and dog walkers: fewer no-shows, better booking pages, reminders and more. A new post every morning.',
+    title: 'Blog: booking tips for small businesses | Bookable',
+    description: 'Plain-English booking advice for barbers, nail technicians, dog walkers and other small businesses: fewer no-shows, better booking pages, tidy diaries.',
     ogTitle: 'Booking tips for\nsolo businesses.',
     body: ({ crumbs }) => `
 <div class="wrap">${crumbs}</div>
 <section class="hero sub">
   <div class="wrap">
     <h1>The Bookable blog.</h1>
-    <p class="lede">Practical advice for barbers, nail technicians and dog walkers on bookings, no-shows, reminders and running a tidy diary. New posts every day.</p>
+    <p class="lede">Practical advice for barbers, nail technicians, dog walkers and any business that takes bookings: fewer no-shows, reminders and a tidy diary. New posts every day.</p>
   </div>
 </section>
 <section class="s">
@@ -728,7 +728,7 @@ ${ctaBand(`Start your 7 days free`, `Set up your booking page in a few minutes. 
 export const notFound = {
   file: '404.html',
   title: 'Page not found | Bookable',
-  description: 'That page does not exist. Go back to Bookable, the booking app for barbers, nail technicians and dog walkers.',
+  description: 'That page does not exist. Go back to Bookable, the booking link for any business.',
   body: `
 <section class="nf">
   <div class="wrap">

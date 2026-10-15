@@ -77,7 +77,7 @@ function crumbsHtml(page) {
 }
 function graph(page) {
   const url = pageUrl(page.path), g = [];
-  const org = { '@type': 'Organization', '@id': SITE + '/#organization', name: cfg.name, url: SITE + '/', logo: { '@type': 'ImageObject', url: abs('/icon-512.png'), width: 512, height: 512 } };
+  const org = { '@type': 'Organization', sameAs: ['https://github.com/spirestudio/bookable'], '@id': SITE + '/#organization', name: cfg.name, url: SITE + '/', logo: { '@type': 'ImageObject', url: abs('/icon-512.png'), width: 512, height: 512 } };
   const site = { '@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: cfg.name, inLanguage: 'en-GB', publisher: { '@id': SITE + '/#organization' } };
   const web = { '@type': 'WebPage', '@id': url + '#webpage', url, name: page.title, description: page.description, inLanguage: 'en-GB', isPartOf: { '@id': SITE + '/#website' }, primaryImageOfPage: { '@type': 'ImageObject', url: abs(OG[ogName(page)] || '') } };
   g.push(web);
@@ -86,7 +86,7 @@ function graph(page) {
     web.breadcrumb = { '@id': url + '#breadcrumb' };
     g.push({ '@type': 'BreadcrumbList', '@id': url + '#breadcrumb', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: SITE + '/' }, { '@type': 'ListItem', position: 2, name: page.nav, item: url }] });
   }
-  const app = { '@type': 'SoftwareApplication', '@id': SITE + '/#software', name: cfg.name, applicationCategory: 'BusinessApplication', operatingSystem: 'Any web browser', url: SITE + '/', description: 'Booking pages, a calendar and WhatsApp reminders for solo barbers, nail technicians and dog walkers.', inLanguage: 'en-GB', offers: { '@type': 'Offer', price: '14.99', priceCurrency: 'GBP', description: '£14.99 a month after a 7-day free trial. No contract.' } };
+  const app = { '@type': 'SoftwareApplication', '@id': SITE + '/#software', name: cfg.name, applicationCategory: 'BusinessApplication', operatingSystem: 'Any web browser', url: SITE + '/', description: 'Booking pages, a calendar and WhatsApp reminders for any business that takes appointments, including barbers, nail technicians and dog walkers.', inLanguage: 'en-GB', offers: { '@type': 'Offer', price: '14.99', priceCurrency: 'GBP', description: '£14.99 a month after a 7-day free trial. No contract.' } };
   const aud = { '/barbers/': 'Barbers', '/nail-technicians/': 'Nail technicians', '/dog-walkers/': 'Dog walkers' }[page.path];
   if (page.path === '/' || page.path === '/pricing/') g.push(app);
   if (aud) g.push({ ...app, '@id': url + '#software', audience: { '@type': 'Audience', audienceType: aud }, url });
@@ -156,11 +156,14 @@ function md(src) {
   close();
   /* a Bookable box before the third heading (or before the last one in a short post) */
   const html = out.join('\n'), parts = html.split('<h2>');
-  const box = '<aside class="callout"><b>Bookable</b> gives barbers, nail technicians and dog walkers one booking link for their bio, a calendar that stops double-booking and reminders ready to send. <a href="/app/#/signup">Try it free for 7 days</a></aside>\n';
+  const box = '<aside class="callout"><b>Bookable</b> gives any business one booking link for their bio, a calendar that stops double-booking and reminders ready to send. <a href="/app/#/signup">Try it free for 7 days</a></aside>\n';
   if (parts.length < 3) return html;
   const at = parts.length >= 4 ? 3 : parts.length - 1;
   return parts.slice(0, at).join('<h2>') + '\n' + box + '<h2>' + parts.slice(at).join('<h2>');
 }
+/* every post links to the three posts before it (they are always live when this one is), which helps readers and search engines move around the blog */
+const ORDER = POSTS.slice().sort((a, b) => (a.date + (a.time || '09:00')).localeCompare(b.date + (b.time || '09:00')));
+const related = post => { const k = ORDER.findIndex(p => p.slug === post.slug); return ORDER.slice(Math.max(0, k - 3), k).reverse(); };
 const seen = new Set();
 for (const post of POSTS) {
   if (seen.has(post.slug)) throw new Error('duplicate blog slug ' + post.slug); seen.add(post.slug);
@@ -170,6 +173,7 @@ for (const post of POSTS) {
 <section class="hero sub"><div class="wrap"><h1 style="font-size:clamp(34px,5.4vw,60px);max-width:16em">${esc(post.title)}</h1><p class="byline">${longDate(post.date)} · Bookable blog</p><div class="ctas" style="margin-top:22px"><a class="btn accent sm" href="/app/#/signup">Try Bookable free</a></div></div></section>
 <section class="s"><div class="wrap article">
 ${md(post.body)}
+${related(post).length ? '<h2>Keep reading</h2><ul class="alist">' + related(post).map(p => '<li><a href="/blog/' + p.slug + '/">' + esc(p.title) + '</a></li>').join('') + '</ul>' : ''}
 <div class="post-cta"><h2>Get your own Bookable booking page</h2><ul class="alist"><li>One link for your Instagram bio and WhatsApp, so clients book themselves</li><li>A calendar that only offers free times and never double-books</li><li>Reminders written for you, ready to send from your own number</li></ul><p>Free for 7 days, then £14.99 a month. No contract, and no card needed while Bookable is in early access.</p><div class="ctas"><a class="btn accent" href="/app/#/signup">Try Bookable free</a><a class="btn ghost" href="${post.cta}">${esc(post.ctaLabel || 'See how it works')}</a></div></div>
 </div></section>`;
   write(page.file, layout(page, body));
@@ -247,7 +251,7 @@ ${pages.map(p => `  <url><loc>${abs(p.path)}</loc><lastmod>${TODAY}</lastmod></u
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /client/\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write('llms.txt', `# Bookable
 
-> Bookable is a booking app for solo barbers, nail technicians and dog walkers who take appointments by message. It gives each business one booking link for Instagram and WhatsApp, a calendar with availability rules, and WhatsApp reminders written and ready to send. It costs £14.99 a month after a 7-day free trial.
+> Bookable is a booking app for any business that takes appointments by message, such as barbers, nail technicians, dog walkers, tutors and trainers. It gives each business one booking link for Instagram and WhatsApp, a calendar with availability rules, and WhatsApp reminders written and ready to send. It costs £14.99 a month after a 7-day free trial.
 
 Bookable is in early access. Businesses sign in to manage bookings, which are stored on Bookable's servers, and clients book from a shared link without an account. Reminders open WhatsApp with the message ready rather than sending automatically, and online payments are not included.
 
