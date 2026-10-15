@@ -2,7 +2,7 @@
 
 export const EXTRA = [
   {
-    slug: 'put-your-prices-up-without-losing-clients', date: '2026-10-27', time: '09:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'put-your-prices-up-without-losing-clients', date: '2026-10-19', time: '08:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'How to put your prices up without losing clients',
     description: 'A calm, simple way for barbers, nail technicians and dog walkers to raise prices, with wording you can copy and the timing that works.',
     body: `
@@ -34,7 +34,7 @@ Raise prices in small, regular steps with notice and a friendly message. In Book
 `,
   },
   {
-    slug: 'school-holidays-kids-cuts-barber', date: '2026-10-28', time: '09:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'school-holidays-kids-cuts-barber', date: '2026-10-19', time: '19:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'Half-term and holidays: how barbers handle the kids rush',
     description: 'Half-term and holiday weeks bring a wave of kids haircuts. Here is how a solo barber can plan the slots, the timings and the price list.',
     body: `
@@ -65,7 +65,7 @@ Open dedicated slots, give kids realistic times and make booking one tap for par
 `,
   },
   {
-    slug: 'write-a-no-show-policy-clients-accept', date: '2026-10-29', time: '09:00', cta: '/barbers/', ctaLabel: 'See how deposits work',
+    slug: 'write-a-no-show-policy-clients-accept', date: '2026-10-20', time: '14:00', cta: '/barbers/', ctaLabel: 'See how deposits work',
     title: 'How to write a no-show policy clients actually accept',
     description: 'A short, fair no-show and late cancellation policy for solo service businesses, with wording that is clear without sounding harsh.',
     body: `
@@ -97,7 +97,7 @@ A short, friendly policy plus a deposit where it matters cuts no-shows without d
 `,
   },
   {
-    slug: 'mobile-barber-or-chair-rental-or-own-shop', date: '2026-10-30', time: '09:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'mobile-barber-or-chair-rental-or-own-shop', date: '2026-10-21', time: '08:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'Mobile, chair rental or your own shop: barber guide',
     description: 'Three common ways to work as a barber compared by costs, flexibility and how clients find you, so you can pick what suits you now.',
     body: `
@@ -135,7 +135,7 @@ Match your setup to your savings, your client base and how much risk you are hap
 `,
   },
   {
-    slug: 'barber-reel-ideas-that-bring-bookings', date: '2026-10-31', time: '09:00', cta: '/barbers/', ctaLabel: 'Get your booking link',
+    slug: 'barber-reel-ideas-that-bring-bookings', date: '2026-10-21', time: '19:00', cta: '/barbers/', ctaLabel: 'Get your booking link',
     title: 'Instagram and TikTok ideas for barbers that book',
     description: 'Simple, repeatable video ideas for barbers that show your work, your personality and a clear way to book, without needing fancy kit.',
     body: `
@@ -169,7 +169,7 @@ Show real work, keep clips short and make the booking link easy to find. Bookabl
 `,
   },
   {
-    slug: 'fill-your-diary-in-january', date: '2026-11-01', time: '09:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'fill-your-diary-in-january', date: '2026-10-22', time: '14:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'How to fill your diary in the quiet weeks after Christmas',
     description: 'January is often slow for barbers, nail technicians and dog walkers. Practical ways to keep bookings coming when money is tight.',
     body: `
@@ -200,7 +200,7 @@ Prepare early, contact your regulars and offer smart, limited deals. With Bookab
 `,
   },
   {
-    slug: 'whatsapp-quick-replies-for-barbers', date: '2026-11-02', time: '09:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'whatsapp-quick-replies-for-barbers', date: '2026-10-23', time: '08:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'WhatsApp quick replies that save barbers half an hour a day',
     description: 'Save time on repeat questions with ready-made replies for prices, opening hours, availability and booking, set up in WhatsApp Business.',
     body: `
@@ -230,7 +230,7 @@ Save your top five answers, always include the booking link, and keep the tone f
 `,
   },
   {
-    slug: 'late-cancellation-fees-nail-technician', date: '2026-11-03', time: '09:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
+    slug: 'late-cancellation-fees-nail-technician', date: '2026-10-23', time: '19:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
     title: 'Late cancellation fees for nail techs, done fairly',
     description: 'Nail appointments are long and hard to refill. Here is a fair, clear way to handle late cancellations and no-shows.',
     body: `
@@ -261,7 +261,7 @@ Deposit, notice and a firm but friendly line on late cancellations. In Bookable 
 `,
   },
   {
-    slug: 'keep-clients-on-a-three-week-infill-cycle', date: '2026-11-04', time: '09:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
+    slug: 'keep-clients-on-a-three-week-infill-cycle', date: '2026-10-24', time: '14:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
     title: 'How to keep clients on a regular infill cycle',
     description: 'Gel and acrylic clients need regular infills. Here is how to help them rebook on time, without chasing every message.',
     body: `
@@ -290,7 +290,7 @@ Rebook at the appointment, send a friendly reminder and make booking easy. Booka
 `,
   },
   {
-    slug: 'working-from-home-as-a-nail-technician', date: '2026-11-05', time: '09:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
+    slug: 'working-from-home-as-a-nail-technician', date: '2026-10-24', time: '19:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
     title: 'Working from home as a nail technician: checklist',
     description: 'Setting up a home nail studio? A friendly checklist covering space, insurance, rules for clients and how to take bookings.',
     body: `
@@ -322,7 +322,7 @@ A clean space, the right insurance and clear boundaries make a home studio feel 
 `,
   },
   {
-    slug: 'nail-photos-that-sell-your-work', date: '2026-11-06', time: '09:00', cta: '/nail-technicians/', ctaLabel: 'Get your booking link',
+    slug: 'nail-photos-that-sell-your-work', date: '2026-10-25', time: '14:00', cta: '/nail-technicians/', ctaLabel: 'Get your booking link',
     title: 'How to photograph nails so your work sells itself',
     description: 'Great photos are your best advert. Simple lighting, backgrounds and angles that make nail sets look as good online as in person.',
     body: `
@@ -356,7 +356,7 @@ Good light, a simple background and consistent style make your work look as good
 `,
   },
   {
-    slug: 'dog-walker-meet-and-greet-checklist', date: '2026-11-07', time: '09:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
+    slug: 'dog-walker-meet-and-greet-checklist', date: '2026-10-25', time: '19:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
     title: 'The dog walker meet and greet: what to ask',
     description: 'A checklist for the first meeting with a new client and their dog, so walks run smoothly and everyone knows the rules.',
     body: `
@@ -395,7 +395,7 @@ Ask about the dog, the walk and the home, then agree the rules clearly. Bookable
 `,
   },
   {
-    slug: 'handling-house-keys-safely-dog-walker', date: '2026-11-08', time: '09:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
+    slug: 'handling-house-keys-safely-dog-walker', date: '2026-10-26', time: '08:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
     title: 'Handling house keys safely as a dog walker',
     description: 'Clients trust you with their home. Sensible ways to store, label and return keys so you stay professional and protected.',
     body: `
@@ -427,7 +427,7 @@ Use codes not addresses, store keys securely and keep a short record. Bookable k
 `,
   },
   {
-    slug: 'how-many-dogs-per-walk', date: '2026-11-09', time: '09:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
+    slug: 'how-many-dogs-per-walk', date: '2026-10-26', time: '14:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
     title: 'How many dogs per walk? Planning your day as a dog walker',
     description: 'Group sizes, timing and safety: how to plan your day so walks are enjoyable for the dogs and profitable for you.',
     body: `
@@ -456,7 +456,7 @@ Safety, compatible dogs and a realistic timetable matter more than squeezing in 
 `,
   },
   {
-    slug: 'bad-weather-policy-for-dog-walkers', date: '2026-11-10', time: '09:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
+    slug: 'bad-weather-policy-for-dog-walkers', date: '2026-10-26', time: '19:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
     title: 'A bad weather policy dog walkers can use',
     description: 'Storms, ice and heatwaves happen. Here is how to write a clear policy so clients know what to expect and you stay safe.',
     body: `
@@ -485,7 +485,7 @@ Write down your limits, offer alternatives and tell clients in good time. Bookab
 `,
   },
   {
-    slug: 'holiday-cover-for-dog-walkers', date: '2026-11-11', time: '09:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
+    slug: 'holiday-cover-for-dog-walkers', date: '2026-10-27', time: '08:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
     title: 'Holiday cover for dog walkers: time off, no lost clients',
     description: 'Planning a break as a solo dog walker? How to tell clients, arrange cover and block your diary so you can rest without worry.',
     body: `
@@ -516,7 +516,7 @@ Choose dates early, give plenty of notice and block your diary. In Bookable you 
 `,
   },
   {
-    slug: 'pricing-dog-walking-per-walk-or-monthly', date: '2026-11-12', time: '09:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
+    slug: 'pricing-dog-walking-per-walk-or-monthly', date: '2026-10-27', time: '14:00', cta: '/dog-walkers/', ctaLabel: 'See Bookable for dog walkers',
     title: 'Pricing dog walking: per walk, per hour or monthly?',
     description: 'Different ways to price dog walks and how each affects your income, your clients and your admin.',
     body: `
@@ -554,7 +554,7 @@ Choose a model you can explain in one sentence and make sure it covers your real
 `,
   },
   {
-    slug: 'which-services-earn-the-most-per-hour', date: '2026-11-13', time: '09:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'which-services-earn-the-most-per-hour', date: '2026-10-27', time: '19:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'Which of your services earns the most per hour?',
     description: 'A simple way for solo service businesses to work out which appointments are really worth the most for the time they take.',
     body: `
@@ -585,7 +585,7 @@ Divide price by true time, remove costs and make decisions from there. Bookable 
 `,
   },
   {
-    slug: 'what-to-say-when-a-client-goes-quiet', date: '2026-11-14', time: '09:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'what-to-say-when-a-client-goes-quiet', date: '2026-10-28', time: '08:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'What to say when a regular client goes quiet',
     description: 'Short, friendly messages to bring back clients who have not rebooked, without sounding pushy or desperate.',
     body: `
@@ -618,7 +618,7 @@ Wait a little, send a short friendly message with your link and respect any answ
 `,
   },
   {
-    slug: 'tax-basics-for-new-sole-traders-in-the-uk', date: '2026-11-15', time: '09:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'tax-basics-for-new-sole-traders-in-the-uk', date: '2026-10-28', time: '14:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'Tax basics for new sole traders in the UK: where to start',
     description: 'A plain-English starting point for new barbers, nail technicians and dog walkers working for themselves, with pointers to official guidance.',
     body: `
@@ -650,7 +650,7 @@ Keep records, separate your money and check the rules early. Bookable keeps a cl
 `,
   },
   {
-    slug: 'fill-last-minute-gaps-in-your-diary', date: '2026-11-16', time: '09:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'fill-last-minute-gaps-in-your-diary', date: '2026-10-28', time: '19:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'How to fill last-minute gaps in your diary',
     description: 'A cancellation or a quiet afternoon does not have to mean lost income. Quick ways to turn empty slots into bookings.',
     body: `
@@ -679,7 +679,7 @@ Tell people about free slots, keep a short list of clients to message and use yo
 `,
   },
   {
-    slug: 'what-clients-want-from-a-booking-page', date: '2026-11-17', time: '09:00', cta: '/pricing/', ctaLabel: 'Create your booking page',
+    slug: 'what-clients-want-from-a-booking-page', date: '2026-10-29', time: '08:00', cta: '/pricing/', ctaLabel: 'Create your booking page',
     title: 'What clients actually want from your booking page',
     description: 'Clients do not want a fancy website. They want clear prices, free times and a quick way to book. Here is what to include.',
     body: `

@@ -66,7 +66,7 @@ const abs = p => SITE + p;
 const pageUrl = p => (cfg.blogCanonical && typeof p === 'string' && p.startsWith('/blog/')) ? cfg.blogCanonical.replace(/\/$/, '') + p : abs(p);
 const ogName = p => (p.path === '/' ? 'home' : p.path.replace(/\//g, ''));
 
-const iconHead = `<link rel="icon" href="/favicon.ico" sizes="32x32"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="${cfg.themeColor}">`;
+const iconHead = `<link rel="icon" href="/favicon.ico" sizes="32x32"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="${cfg.themeColor}"><meta name="google-site-verification" content="HJWRYtoC95lVf62ZBCP0q5uQE7XjgBhi7Mu_G_boMj0">`;
 const fontPreload = `<link rel="preload" href="${fontUrl}" as="font" type="font/woff2" crossorigin>`;
 
 function faqHtml(items) {

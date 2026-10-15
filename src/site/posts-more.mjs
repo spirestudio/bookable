@@ -232,7 +232,7 @@ Good preparation shows in how owners feel about handing over their dog. Bookable
 `,
   },
   {
-    slug: 'nail-tech-pricing-your-time', date: '2026-10-21', time: '15:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
+    slug: 'nail-tech-pricing-your-time', date: '2026-10-15', time: '14:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
     title: 'How nail technicians can price their time properly',
     description: 'A simple way for a solo nail technician to work out prices that cover time, products and tax, without guessing.',
     body: `
@@ -268,7 +268,7 @@ Price from your own costs and time, not from guesses. In Bookable each service h
 `,
   },
   {
-    slug: 'mobile-or-salon-based', date: '2026-10-22', time: '15:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'mobile-or-salon-based', date: '2026-10-16', time: '08:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'Mobile or salon-based? What solo pros should think about',
     description: 'Working from clients’ homes, your own space or a rented chair: the costs, freedom and trade-offs for a one-person business.',
     body: `
@@ -303,7 +303,7 @@ Choose the setup that fits your money and your life right now, and you can chang
 `,
   },
   {
-    slug: 'fill-quiet-days-in-your-diary', date: '2026-10-23', time: '15:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'fill-quiet-days-in-your-diary', date: '2026-10-16', time: '19:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'How to fill the quiet days in your diary',
     description: 'Tuesdays dead? Simple, honest ways for solo barbers, nail techs and dog walkers to fill gaps without discounting yourself.',
     body: `
@@ -335,7 +335,7 @@ Be specific, stay friendly and make gaps easy to book. Bookable shows free times
 `,
   },
   {
-    slug: 'deposits-worth-it', date: '2026-10-24', time: '15:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
+    slug: 'deposits-worth-it', date: '2026-10-17', time: '14:00', cta: '/nail-technicians/', ctaLabel: 'See Bookable for nail technicians',
     title: 'Should you take deposits? When they are worth it',
     description: 'Deposits can cut no-shows, but they are not right for every business. How to decide and how to introduce them without losing clients.',
     body: `
@@ -371,7 +371,7 @@ Use deposits where they protect real money, and be clear and fair about them. Bo
 `,
   },
   {
-    slug: 'client-notes-what-to-keep', date: '2026-10-25', time: '15:00', cta: '/privacy/', ctaLabel: 'Read how Bookable handles data',
+    slug: 'client-notes-what-to-keep', date: '2026-10-18', time: '08:00', cta: '/privacy/', ctaLabel: 'Read how Bookable handles data',
     title: 'Client notes: what to keep and what to leave out',
     description: 'Good notes make clients feel remembered. A plain-English guide to what a solo business should write down, and what to avoid.',
     body: `
@@ -406,7 +406,7 @@ Short, useful, respectful notes help both of you. Bookable stores a note with ea
 `,
   },
   {
-    slug: 'first-week-booking-link-checklist', date: '2026-10-26', time: '15:00', cta: '/pricing/', ctaLabel: 'Try Bookable free',
+    slug: 'first-week-booking-link-checklist', date: '2026-10-18', time: '19:00', cta: '/pricing/', ctaLabel: 'Try Bookable free',
     title: 'Your first week with a booking link: a simple checklist',
     description: 'You have a booking link. Now what? A day-by-day checklist to get clients using it, for barbers, nail techs and dog walkers.',
     body: `
@@ -443,7 +443,7 @@ A week of small steps turns a link into a habit. Bookable gives you the link, th
 `,
   },
   {
-    slug: 'walk-ins-and-appointments-barbers', date: '2026-10-27', time: '15:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'walk-ins-and-appointments-barbers', date: '2026-10-19', time: '14:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'Walk-ins and appointments: how barbers can run both',
     description: 'Many barbers want to keep walk-in trade and still take bookings. A simple system that works for a solo chair.',
     body: `
@@ -475,7 +475,7 @@ Mix the two on purpose, with bookable blocks and open blocks. In Bookable you ca
 `,
   },
   {
-    slug: 'reminder-timing-24-hours-or-2', date: '2026-10-28', time: '15:00', cta: '/barbers/', ctaLabel: 'Try Bookable reminders',
+    slug: 'reminder-timing-24-hours-or-2', date: '2026-10-20', time: '08:00', cta: '/barbers/', ctaLabel: 'Try Bookable reminders',
     title: 'When to send reminders: 24 hours before or 2 hours?',
     description: 'The best time to remind a client is not always the same. How to choose between a day before, a few hours before, or both.',
     body: `
@@ -508,7 +508,7 @@ Start with a reminder the day before and add a short one on the day if no-shows 
 `,
   },
   {
-    slug: 'before-after-photos-with-permission', date: '2026-10-29', time: '15:00', cta: '/privacy/', ctaLabel: 'Read how Bookable handles data',
+    slug: 'before-after-photos-with-permission', date: '2026-10-20', time: '19:00', cta: '/privacy/', ctaLabel: 'Read how Bookable handles data',
     title: 'Before and after photos: how to post them properly',
     description: 'Before and afters sell your work, but you need permission. A short guide for barbers, nail technicians and groomers.',
     body: `
@@ -543,7 +543,7 @@ Ask, be clear and be kind. Photos taken with permission build trust, and trust b
 `,
   },
   {
-    slug: 'referral-ideas-that-cost-nothing', date: '2026-10-30', time: '15:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'referral-ideas-that-cost-nothing', date: '2026-10-21', time: '14:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'Simple referral ideas that cost almost nothing',
     description: 'Word of mouth is the best source of clients for a solo business. Easy ways to encourage it without big discounts.',
     body: `
@@ -578,7 +578,7 @@ Ask, make it easy to share your link, and say thanks. Bookable's booking link is
 `,
   },
   {
-    slug: 'time-off-without-losing-bookings', date: '2026-10-31', time: '15:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'time-off-without-losing-bookings', date: '2026-10-22', time: '08:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'Taking time off without losing bookings',
     description: 'Holidays and sick days are hard when you work alone. How to plan time away and keep your clients happy.',
     body: `
@@ -613,7 +613,7 @@ Early notice, blocked days and honest messages keep clients loyal. Bookable lets
 `,
   },
   {
-    slug: 'christmas-rush-prep', date: '2026-11-01', time: '15:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'christmas-rush-prep', date: '2026-10-22', time: '19:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'Getting ready for the Christmas rush as a solo business',
     description: 'December fills up fast for barbers, nail technicians and dog walkers. How to prepare your diary, prices and time off now.',
     body: `
@@ -648,7 +648,7 @@ Open your diary early, protect your time and use reminders. Bookable's booking p
 `,
   },
   {
-    slug: 'why-double-bookings-happen', date: '2026-11-02', time: '15:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'why-double-bookings-happen', date: '2026-10-23', time: '14:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'Why double bookings happen and how to stop them',
     description: 'Two clients, one slot. The common causes of double bookings for solo businesses, and simple ways to avoid them.',
     body: `
@@ -678,7 +678,7 @@ One calendar, quick notes and times that disappear when taken. Bookable blocks a
 `,
   },
   {
-    slug: 'slot-lengths-new-vs-regular', date: '2026-11-03', time: '15:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'slot-lengths-new-vs-regular', date: '2026-10-24', time: '08:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'Slot lengths: how long to book for new clients and regulars',
     description: 'New clients usually take longer than regulars. How to set appointment lengths that keep your day on time.',
     body: `
@@ -753,7 +753,7 @@ Pick the simplest tool that does what you need, at a fair flat price. Bookable i
 `,
   },
   {
-    slug: 'sole-trader-simple-records', date: '2026-11-05', time: '15:00', cta: '/payments/', ctaLabel: 'See how payments work',
+    slug: 'sole-trader-simple-records', date: '2026-10-25', time: '08:00', cta: '/payments/', ctaLabel: 'See how payments work',
     title: 'Keeping simple records as a sole trader',
     description: 'A plain guide to tracking income and costs when you work for yourself. General information, not tax advice.',
     body: `

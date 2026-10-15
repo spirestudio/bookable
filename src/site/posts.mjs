@@ -264,7 +264,7 @@ Clear rules plus a kind tone keep both your income and your clients. Bookable sh
 `,
   },
   {
-    slug: 'how-many-appointments-solo-barber-day', date: '2026-10-21', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'how-many-appointments-solo-barber-day', date: '2026-10-15', time: '08:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'How many appointments can a solo barber fit in a day?',
     description: 'A simple way for a one-chair barber to work out how many clients fit in a day, with real slot lengths and breaks.',
     body: `
@@ -297,7 +297,7 @@ Know your real service times and buffer, and you can plan your day and your pric
 `,
   },
   {
-    slug: 'what-to-put-on-your-booking-page', date: '2026-10-22', cta: '/pricing/', ctaLabel: 'Create your booking page',
+    slug: 'what-to-put-on-your-booking-page', date: '2026-10-15', time: '19:00', cta: '/pricing/', ctaLabel: 'Create your booking page',
     title: 'What to put on your booking page so people actually book',
     description: 'A good booking page is short and clear. Here is what a barber, nail tech or dog walker should include, and what to leave out.',
     body: `
@@ -334,7 +334,7 @@ Short, honest and easy beats fancy. Bookable's booking pages are set up this way
 `,
   },
   {
-    slug: 'do-i-need-a-website-if-i-have-instagram', date: '2026-10-23', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'do-i-need-a-website-if-i-have-instagram', date: '2026-10-16', time: '14:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'Do I need a website if I already have Instagram?',
     description: 'For many barbers, nail techs and dog walkers, Instagram plus a booking link is enough. Here is when a full website is worth it.',
     body: `
@@ -370,7 +370,7 @@ For most solo businesses, Instagram plus a booking link covers the essentials. B
 `,
   },
   {
-    slug: 'uk-data-protection-sole-traders-bookings', date: '2026-10-24', cta: '/privacy/', ctaLabel: 'Read how Bookable handles data',
+    slug: 'uk-data-protection-sole-traders-bookings', date: '2026-10-17', time: '08:00', cta: '/privacy/', ctaLabel: 'Read how Bookable handles data',
     title: 'Client phone numbers and UK data protection, simply',
     description: 'If you take bookings, you hold your clients’ names and numbers. A plain-English guide to doing it properly under UK data protection rules.',
     body: `
@@ -400,7 +400,7 @@ Collect little, use it only for bookings, keep it secure and delete it when you 
 `,
   },
   {
-    slug: 'get-repeat-bookings-barber-nails-dog-walker', date: '2026-10-25', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
+    slug: 'get-repeat-bookings-barber-nails-dog-walker', date: '2026-10-17', time: '19:00', cta: '/barbers/', ctaLabel: 'See Bookable for barbers',
     title: 'How to get clients to rebook before they leave',
     description: 'Regulars are the base of a solo business. Simple, friendly ways to get your next booking in the diary before the client has left.',
     body: `
@@ -429,7 +429,7 @@ Ask, suggest, and make it easy. Bookable gives every client the same booking lin
 `,
   },
   {
-    slug: 'how-to-price-your-services-and-show-durations', date: '2026-10-26', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
+    slug: 'how-to-price-your-services-and-show-durations', date: '2026-10-18', time: '14:00', cta: '/pricing/', ctaLabel: 'See what Bookable includes',
     title: 'How to price your services and show how long they take',
     description: 'Clear prices and durations get you more bookings and fewer awkward conversations. A simple approach for solo barbers, nail techs and dog walkers.',
     body: `
