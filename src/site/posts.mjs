@@ -4,6 +4,7 @@
 
 import { MORE } from './posts-more.mjs';
 import { EXTRA } from './posts-extra.mjs';
+import { BATCH3 } from './posts-batch3.mjs';
 
 const BASE = [
   {
@@ -459,7 +460,7 @@ Honest times and clear prices help clients book and help you plan your day. In B
   },
 ];
 
-export const POSTS = [...BASE, ...MORE, ...EXTRA];
+export const POSTS = [...BASE, ...MORE, ...EXTRA, ...BATCH3];
 
 /* Metadata only (used by the Worker, which decides what is live). */
 export const POST_META = POSTS.map(({ slug, date, time, title, description }) => ({ slug, date, time: time || '09:00', title, description }));

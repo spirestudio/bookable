@@ -72,7 +72,7 @@ export const pages = [
       <p class="note fine" style="margin-top:18px">7 days free, then £14.99 a month. Cancel any time. No card needed while Bookable is in early access.</p>
       <form class="herosearch" action="/find/" method="get" role="search">
         <label for="hq">Booking an appointment? Search for the business you want to book with.</label>
-        <div class="box"><input id="hq" type="search" name="q" placeholder="Search by name or town" maxlength="50" autocomplete="off"><button type="submit">Search</button></div>
+        <div class="box"><input id="hq" type="search" name="q" placeholder="Name or town" maxlength="50" autocomplete="off"><button type="submit">Search</button></div>
       </form>
     </div>
     <div class="art" aria-hidden="false">
@@ -493,7 +493,7 @@ ${ctaBand(`Give your clients one link to book`, `Set up your dog walker booking 
 </ul>
 
 <h2 style="margin-top:36px">Where data is stored</h2>
-<p>Bookable is hosted on Cloudflare, which provides our servers and database. Cloudflare may process data in the UK, the European Economic Area and other countries, using recognised safeguards for transfers outside the UK. Cloudflare is our hosting provider. Telegram is used only to send private alerts to the owner, with a masked email address, never client data.</p>
+<p>Bookable is hosted on Cloudflare, which provides our servers and database. Cloudflare may process data in the UK, the European Economic Area and other countries, using recognised safeguards for transfers outside the UK. Cloudflare is our hosting provider. Telegram is used to send private alerts to the Bookable owner (masked email addresses, never client data) and, only if a business owner chooses to connect it, to send that owner a message when a client books (client name, service and time; never phone numbers).</p>
 
 <h2 style="margin-top:36px">Lawful bases</h2>
 <ul class="rows">
@@ -509,7 +509,7 @@ ${ctaBand(`Give your clients one link to book`, `Set up your dog walker booking 
 <p>If a personal data breach puts people at risk, we will tell the affected business owners without undue delay and report it to the ICO within 72 hours where the law requires.</p>
 
 <h2 style="margin-top:36px">Contact</h2>
-<p><a href="mailto:websitebuilds01@gmail.com">websitebuilds01@gmail.com</a></p>
+<p><a href="mailto:info@mybookable.co.uk">info@mybookable.co.uk</a></p>
 
 <h2 style="margin-top:44px">Common questions</h2>
 ${faq(FAQ_GDPR)}
@@ -549,7 +549,7 @@ ${faq(FAQ_GDPR)}
 </ul>
 
 <h2 style="margin-top:36px">Receipts</h2>
-<p>We can send a receipt for any payment on request. Email <a href="mailto:websitebuilds01@gmail.com">websitebuilds01@gmail.com</a>.</p>
+<p>We can send a receipt for any payment on request. Email <a href="mailto:info@mybookable.co.uk">info@mybookable.co.uk</a>.</p>
 
 <p class="note" style="margin-top:28px">See also the <a href="/terms/">terms of use</a> and the <a href="/privacy/">privacy policy</a>.</p>
 
@@ -624,13 +624,13 @@ ${ctaBand(`Start your 7 days free`, `Set up your booking page in a few minutes. 
     path: '/privacy/', file: 'privacy/index.html', nav: 'Privacy',
     title: 'Privacy policy | Bookable',
     description: 'What data Bookable collects, why, who can see it, how long it is kept, and your rights under UK GDPR.',
-    faq: [['Do you sell my data?', 'No. Bookable never sells data and does not use it for advertising.'], ['How do I delete my data?', 'Business owners can delete their account in the app, which removes the business, its bookings and its clients. Clients can ask the business they booked with, or email websitebuilds01@gmail.com.']],
+    faq: [['Do you sell my data?', 'No. Bookable never sells data and does not use it for advertising.'], ['How do I delete my data?', 'Business owners can delete their account in the app, which removes the business, its bookings and its clients. Clients can ask the business they booked with, or email info@mybookable.co.uk.']],
     body: ({ crumbs }) => `
 <div class="wrap">${crumbs}</div>
 <section class="hero sub"><div class="wrap"><h1>Privacy policy</h1><p class="lede">Plain English. Last updated 12 October 2026.</p></div></section>
 <section class="s"><div class="wrap" style="max-width:720px">
 <h2>Who we are</h2>
-<p>Bookable is a booking app for one-person businesses, run from the UK. Contact for anything in this policy: <a href="mailto:websitebuilds01@gmail.com">websitebuilds01@gmail.com</a>.</p>
+<p>Bookable is a booking app for one-person businesses, run from the UK. Contact for anything in this policy: <a href="mailto:info@mybookable.co.uk">info@mybookable.co.uk</a>.</p>
 
 <h2 style="margin-top:36px">Who is responsible for what</h2>
 <ul class="rows">
@@ -643,7 +643,7 @@ ${ctaBand(`Start your 7 days free`, `Set up your booking page in a few minutes. 
 <li><strong>Owner account:</strong> email address, a scrambled (hashed) password, business name, town, phone number, services, prices, opening hours and the other settings you choose.</li>
 <li><strong>Bookings and clients:</strong> a client’s name and mobile number, the service, date and time, price, any note or answer they give (for example a dog’s name), and the status of the booking. Please do not put health or other sensitive information in notes.</li>
 <li><strong>Calendar link (optional):</strong> an owner can switch on a private calendar link so their bookings, including client names, numbers and notes, appear in the calendar app they choose (for example Google or Apple). Anyone who has the link can see those bookings, so owners should keep it private and can replace it at any time.</li>
-<li><strong>Owner alerts:</strong> when someone creates an account, signs in or pays, Bookable's owner gets a private message on Telegram with a masked email (like j***@gmail.com) and, for payments, the business name and amount. No client names, phone numbers or booking details are ever sent. Telegram is a separate service.</li>
+<li><strong>Owner alerts:</strong> when someone creates an account, signs in or pays, Bookable's owner gets a private message on Telegram with a masked email (like j***@gmail.com) and, for payments, the business name and amount. These alerts contain no client data. Separately, a business owner can choose to connect their own Telegram to get an alert when a client books; that message has the client's name, the service and the time, never a phone number, and the owner can switch it off at any time. Telegram is a separate service.</li>
 <li><strong>Payment records:</strong> if you pay Bookable, we record the amount, date and method (for example bank transfer) against your account. We do not store card or bank details. These records are kept for up to 6 years for accounting and tax, even after an account is deleted.</li>
 <li><strong>Public listing (only if the owner switches it on):</strong> the business name, town, type and booking page appear in Bookable search. Nothing else is shown, and it is off by default.</li>
 <li><strong>Sign-in cookie:</strong> one essential cookie that keeps you signed in. It is not used for tracking or advertising, so no cookie banner is needed.</li>
@@ -720,7 +720,27 @@ ${ctaBand(`Start your 7 days free`, `Set up your booking page in a few minutes. 
 <p>We may update these terms and will change the date above. If a change is significant we will tell you. These terms are governed by the law of England and Wales, and the courts of England and Wales can deal with any dispute.</p>
 
 <h2 style="margin-top:36px">Contact</h2>
-<p><a href="mailto:websitebuilds01@gmail.com">websitebuilds01@gmail.com</a></p>
+<p><a href="mailto:info@mybookable.co.uk">info@mybookable.co.uk</a></p>
+</div></section>`,
+  },
+
+  {
+    path: '/contact/', file: 'contact/index.html', nav: 'Contact',
+    title: 'Contact and report a problem | Bookable',
+    faq: [['How fast do you reply?', 'We read every message and reply as soon as we can, usually within a day.'], ['What should I include?', 'What you were trying to do, what happened instead, and your email so we can reply. Never send passwords or card details.']],
+    description: 'Email Bookable or send a message about a problem. We read every message and reply as soon as we can.',
+    body: ({ crumbs }) => `
+<div class="wrap">${crumbs}</div>
+<section class="hero sub"><div class="wrap"><h1>Contact us</h1><p class="lede">Something not working, a question, or an idea? Tell us and we will get back to you.</p></div></section>
+<section class="s"><div class="wrap" style="max-width:640px">
+<form id="contactform" class="cform" novalidate>
+<label>Your email (so we can reply)<input type="email" name="email" maxlength="120" autocomplete="email" placeholder="you@example.com"></label>
+<label>What happened?<textarea name="message" rows="6" maxlength="1000" required placeholder="Tell us what you were trying to do and what went wrong."></textarea></label>
+<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;opacity:0">
+<button class="btn accent" type="submit">Send message</button>
+<p id="contactmsg" class="muted" role="status" aria-live="polite"></p>
+</form>
+<p style="margin-top:28px">Or email <a href="mailto:info@mybookable.co.uk">info@mybookable.co.uk</a>. Please do not send passwords or card details.</p>
 </div></section>`,
   },
 ];

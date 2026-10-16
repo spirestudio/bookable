@@ -1,5 +1,6 @@
 /* Bookable API. Runs on Cloudflare Workers with a D1 (SQLite) database. Everything else is served as static assets. */
-import { blogRoute } from './blog.js';
+import { blogRoute, indexNow } from './blog.js';
+import siteConfig from '../../site.config.json';
 
 const enc = new TextEncoder();
 const pad = n => String(n).padStart(2, '0');
@@ -17,8 +18,9 @@ export default {
   async fetch(req, env, ctx) {
     try {
       const u = new URL(req.url);
-      if (u.pathname === '/sitemap.xml' || u.pathname === '/blog' || u.pathname.startsWith('/blog/')) return await blogRoute(req, env, u);
-      return await handle(req, env, ctx);
+      const res = (u.pathname === '/sitemap.xml' || u.pathname === '/blog' || u.pathname.startsWith('/blog/')) ? await blogRoute(req, env, u) : (u.pathname.startsWith('/api/') ? await handle(req, env, ctx) : await env.ASSETS.fetch(req));
+      if (req.method === 'GET' && res.status === 200) ctx.waitUntil(countVisit(req, env, u, res));
+      return res;
     }
     catch (e) {
       if (e instanceof HttpError) return json({ error: e.code, ...(e.extra || {}) }, e.status);
@@ -28,11 +30,33 @@ export default {
   },
   /* daily: delete expired sign-in sessions and anti-abuse records (they hold IP addresses and booking phone numbers) older than 24 hours */
   async scheduled(event, env) {
-    await env.DB.prepare('DELETE FROM sessions WHERE expires < ?').bind(Date.now()).run();
-    await env.DB.prepare('DELETE FROM rl WHERE ts < ?').bind(Date.now() - 864e5).run();
-    await expireDeposits(env);
+    if (event.cron !== '7 * * * *') {      // the daily run
+      await env.DB.prepare('DELETE FROM sessions WHERE expires < ?').bind(Date.now()).run();
+      await env.DB.prepare('DELETE FROM rl WHERE ts < ?').bind(Date.now() - 864e5).run();
+      await expireDeposits(env);
+      await env.DB.prepare('DELETE FROM visits WHERE day < ?').bind(dayOf(Date.now() - 120 * 864e5)).run();
+    }
+    try { await indexNow(env, new URL(siteConfig.url).hostname, siteConfig.indexNowKey); } catch (e) { console.error('indexnow error', e && e.message); }
   },
 };
+
+/* ---------- visit counts: public pages only, one counter per day, page and source. Nothing about the visitor is stored. ---------- */
+const BOT = /bot|crawl|spider|slurp|preview|monitor|curl|wget|python|node|axios|headless|lighthouse|facebookexternalhit|whatsapp/i;
+function refSource(ref, host) {
+  if (!ref) return 'direct';
+  let h = ''; try { h = new URL(ref).hostname.replace(/^www\./, ''); } catch { return 'other'; }
+  if (h === host.replace(/^www\./, '')) return 'internal';
+  if (/google\./.test(h)) return 'google'; if (/bing\.com|duckduckgo|yahoo|ecosia/.test(h)) return 'search'; if (/tiktok/.test(h)) return 'tiktok'; if (/instagram|l\.instagram/.test(h)) return 'instagram'; if (/facebook|fb\.com/.test(h)) return 'facebook'; if (/whatsapp|wa\.me/.test(h)) return 'whatsapp'; if (/github/.test(h)) return 'github'; if (/reddit/.test(h)) return 'reddit';
+  return 'other';
+}
+async function countVisit(req, env, u, res) {
+  try {
+    const ct = res.headers.get('content-type') || '', p = u.pathname;
+    if (!ct.includes('text/html') || /^\/(api|admin|assets|cdn-cgi)\b/.test(p) || /^\/app\/.+/.test(p) || BOT.test(req.headers.get('user-agent') || '')) return;
+    const ref = refSource(req.headers.get('referer'), u.hostname); if (ref === 'internal') return;
+    await env.DB.prepare('INSERT INTO visits (day, path, ref, n) VALUES (?, ?, ?, 1) ON CONFLICT(day, path, ref) DO UPDATE SET n = n + 1').bind(dayOf(Date.now()), p.slice(0, 120), ref).run();
+  } catch { /* counting must never break a page */ }
+}
 
 /* ---------- time (the business is in the UK) ---------- */
 function londonNow() {
@@ -258,6 +282,7 @@ async function handle(req, env, ctx) {
     const dep = doc.biz.depositInfo && svc.deposit > 0 ? svc.deposit : 0, due = dep ? Date.now() + (doc.biz.depositHold || 2) * 36e5 : 0;
     if (dep) await env.DB.prepare('UPDATE bookings SET deposit = ?, deposit_due = ? WHERE id = ?').bind(dep, due, b.id).run();
     await Promise.all([record(env, 'book:' + ip), record(env, `bookphone:${p.user_id}:${normPhone(phone)}`)]);
+    ctx.waitUntil(alertOwner(env, p.user_id, `📅 New booking: ${name} · ${svc.name} · ${niceWhen(body.date, body.time)}${dep ? ' · deposit £' + dep + ' due' : ''}`));
     return json({ booking: { ...(dep ? { deposit: dep, depositDue: due, depositInfo: doc.biz.depositInfo } : {}), id: b.id, svcName: b.svcName, mins: b.mins, price: b.price, date: b.date, time: body.time, name, phone, note } }, 201);
   }
 
@@ -298,6 +323,31 @@ async function handle(req, env, ctx) {
   }
 
   /* ----- customer accounts: keep your appointments in one place ----- */
+  if (path === '/api/telegram/webhook' && method === 'POST') {
+    if (!env.TELEGRAM_WEBHOOK_SECRET || req.headers.get('x-telegram-bot-api-secret-token') !== env.TELEGRAM_WEBHOOK_SECRET) throw new HttpError(403, 'forbidden');
+    const upd = await readJson(req, 8000), msg = upd && upd.message, chat = msg && msg.chat && msg.chat.id, text = msg && typeof msg.text === 'string' ? msg.text.trim() : '';
+    if (!chat || msg.chat.type !== 'private') return json({ ok: true });
+    const start = text.match(/^\/start(?:@\w+)?\s+([A-Za-z0-9_-]{16,64})$/);
+    if (start) {
+      const r = await env.DB.prepare('UPDATE users SET tg_chat = ?, tg_code = NULL WHERE tg_code = ?').bind(String(chat), start[1]).run();
+      ctx.waitUntil(sendTelegram(env, chat, r.meta.changes ? '✅ Connected. You will get a message here whenever a client books through your Bookable link. Send /stop to switch this off.' : 'That link has expired. Open Bookable, go to Plan, and press Connect Telegram again.'));
+    } else if (/^\/stop(@\w+)?$/.test(text)) {
+      await env.DB.prepare('UPDATE users SET tg_chat = NULL WHERE tg_chat = ?').bind(String(chat)).run();
+      ctx.waitUntil(sendTelegram(env, chat, 'Booking alerts are off. You can switch them back on from the Plan page in Bookable.'));
+    } else ctx.waitUntil(sendTelegram(env, chat, 'This is the Bookable alerts bot. To connect it, open Bookable, go to Plan, and press Connect Telegram.'));
+    return json({ ok: true });
+  }
+  if (path === '/api/contact' && method === 'POST') {
+    if (await isLimited(env, 'contact:' + ip, 5, 3600)) throw new HttpError(429, 'slow_down');
+    const body = await readJson(req, 3000);
+    if (typeof body.website === 'string' && body.website) return json({ ok: true });
+    const message = str(body.message, 5, 1000, 'message').replace(/\s+/g, ' ');
+    const from = typeof body.email === 'string' ? body.email.trim().slice(0, 120) : '';
+    if (from && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(from)) throw new HttpError(422, 'invalid_email');
+    await record(env, 'contact:' + ip);
+    ctx.waitUntil(notify(env, '📩 Message from the site' + (from ? ' (' + from + ')' : ' (no email left)') + ':\n' + message.slice(0, 380)));
+    return json({ ok: true });
+  }
   if (path.startsWith('/api/client/')) {
     if (path === '/api/client/signup' && method === 'POST') {
       if (await isLimited(env, 'csignup:' + ip, 10, 3600)) throw new HttpError(429, 'slow_down');
@@ -366,9 +416,16 @@ async function handle(req, env, ctx) {
     await expireDeposits(env, user.id);
     const p = await env.DB.prepare('SELECT doc FROM profiles WHERE user_id = ?').bind(user.id).first();
     const rows = (await env.DB.prepare('SELECT * FROM bookings WHERE user_id = ? ORDER BY date, start LIMIT 3000').bind(user.id).all()).results;
-    const uRow = await env.DB.prepare('SELECT created, totp_on FROM users WHERE id = ?').bind(user.id).first(), bs = billingState(uRow.created, await getBilling(env, user.id), londonNow().date), st = await getSettings(env);
-    return json({ twofa: !!uRow.totp_on, admin: !!env.ADMIN_EMAIL && user.email.toLowerCase() === env.ADMIN_EMAIL.trim().toLowerCase(), email: user.email, doc: p ? JSON.parse(p.doc) : null, bookings: rows.map(rowToBooking), billing: { enforce: st.paywall === 'on', status: bs.status, plan: bs.plan, price: bs.price, paidUntil: bs.paidUntil, trialEnd: bs.trialEnd, daysLeft: bs.daysLeft, overdueDays: bs.overdueDays }, payInfo: st.payInfo });
+    const uRow = await env.DB.prepare('SELECT created, totp_on, tg_chat FROM users WHERE id = ?').bind(user.id).first(), bs = billingState(uRow.created, await getBilling(env, user.id), londonNow().date), st = await getSettings(env);
+    return json({ twofa: !!uRow.totp_on, telegram: !!uRow.tg_chat, admin: !!env.ADMIN_EMAIL && user.email.toLowerCase() === env.ADMIN_EMAIL.trim().toLowerCase(), email: user.email, doc: p ? JSON.parse(p.doc) : null, bookings: rows.map(rowToBooking), billing: { enforce: st.paywall === 'on', status: bs.status, plan: bs.plan, price: bs.price, paidUntil: bs.paidUntil, trialEnd: bs.trialEnd, daysLeft: bs.daysLeft, overdueDays: bs.overdueDays }, payInfo: st.payInfo });
   }
+  if (path === '/api/telegram/link' && method === 'POST') {
+    if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_WEBHOOK_SECRET) throw new HttpError(503, 'unavailable');
+    if (await isLimited(env, 'tglink:' + user.id, 10, 3600)) throw new HttpError(429, 'slow_down');
+    const code = randomToken(18); await env.DB.prepare('UPDATE users SET tg_code = ? WHERE id = ?').bind(code, user.id).run(); await record(env, 'tglink:' + user.id);
+    return json({ url: 'https://t.me/' + (env.TELEGRAM_BOT_USERNAME || 'Pencilbooking_bot') + '?start=' + code });
+  }
+  if (path === '/api/telegram/unlink' && method === 'POST') { await env.DB.prepare('UPDATE users SET tg_chat = NULL, tg_code = NULL WHERE id = ?').bind(user.id).run(); return json({ ok: true }); }
   if (path === '/api/logout-all' && method === 'POST') {
     await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(user.id).run();
     return new Response(null, { status: 204, headers: { 'set-cookie': setCookie(url, '', 0), 'cache-control': 'no-store' } });
@@ -524,6 +581,14 @@ function buildIcs(doc, rows) {
 
 /* ---------- owner alerts on Telegram (secrets TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID). Only a masked email, a business name
    and an amount are ever sent; no client names, phone numbers or booking details. Skipped silently if the secrets are not set. ---------- */
+async function sendTelegram(env, chatId, text) {
+  if (!env.TELEGRAM_BOT_TOKEN) return;
+  try { await fetch(`${env.TELEGRAM_API || 'https://api.telegram.org'}/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: String(text).slice(0, 500), disable_web_page_preview: true }), signal: AbortSignal.timeout(4000) }); } catch { /* alerts are best effort */ }
+}
+async function alertOwner(env, userId, text) {
+  try { const r = await env.DB.prepare('SELECT tg_chat FROM users WHERE id = ?').bind(userId).first(); if (r && r.tg_chat) await sendTelegram(env, r.tg_chat, text); } catch { /* best effort */ }
+}
+const niceWhen = (date, time) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(date + 'T00:00:00Z')) + ' at ' + time;
 const maskEmail = e => { const [u, d] = String(e).split('@'); return (u ? u[0] : '?') + '***@' + (d || '?'); };
 async function notify(env, text) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
@@ -637,12 +702,15 @@ async function adminRoutes(req, env, url, path, method, ip, ctx) {
     const sum = st => outUsers.filter(o => o.billing.status === st);
     const money = list => Math.round(list.reduce((a, o) => a + o.billing.price, 0) * 100) / 100;
     const bill = { paying: sum('paid').length, mrr: money(sum('paid')), trial: sum('trial').length, trialValue: money(sum('trial')), overdue: sum('overdue').length, owed: money(sum('overdue')), free: sum('free').length, cancelled: sum('cancelled').length, collected: Math.round(collected * 100) / 100 };
+    const vis = (await q('SELECT day d, SUM(n) c FROM visits WHERE day >= ? GROUP BY day', dayOf(now - 15 * 864e5)).all()).results,
+      visTop = (await q('SELECT path, SUM(n) c FROM visits WHERE day >= ? GROUP BY path ORDER BY c DESC LIMIT 8', dayOf(now - 14 * 864e5)).all()).results,
+      visSrc = (await q('SELECT ref k, SUM(n) c FROM visits WHERE day >= ? GROUP BY ref ORDER BY c DESC', dayOf(now - 14 * 864e5)).all()).results;
     const settings = await getSettings(env);
     const counts = {}; for (const t of ['users', 'profiles', 'bookings', 'sessions', 'rl']) counts[t] = (await one(`SELECT COUNT(*) c FROM ${t}`)).c;
     let dbBytes = null; try { dbBytes = (await q('SELECT page_count * page_size AS c FROM pragma_page_count(), pragma_page_size()').first()).c; } catch {}
     return json({
       now, today, billing: bill, settings, payments: payRows.map(r => { const d = parseDoc(r.doc); return { id: r.id, userId: r.user_id, business: d ? d.biz.name : '(deleted)', amount: r.amount, method: r.method, paidOn: r.paid_on, note: r.note, created: r.created }; }), kpi: { users: totU.c, new7: newU7.c, new30: newU30.c, bookings: realB.c, upcoming: upcoming.c, today: todayB.c, week: wk.c, active30: active30.c, withPage: outUsers.filter(u => u.slug).length, noBookings: outUsers.filter(u => !u.bookings).length },
-      signups: lastDays(14, signups.results), bookingsPerDay: lastDays(14, bks.results), trades, bySource: bySrc.results, byStatus: byStatus.results, users: outUsers,
+      visits: { perDay: lastDays(14, vis), top: visTop, sources: visSrc }, signups: lastDays(14, signups.results), bookingsPerDay: lastDays(14, bks.results), trades, bySource: bySrc.results, byStatus: byStatus.results, users: outUsers,
       recent: recent.results.map(r => { const d = parseDoc(r.doc); return { id: r.id, business: d ? d.biz.name : '?', svc: r.svc_name, price: r.price, date: r.date, time: fromMin(r.start), status: r.status, source: r.source, created: r.created }; }),
       system: { counts, dbBytes, sessions: sess.c, failedLogins24h: fails.c, config: { pepper: !!env.PEPPER, adminLogin: true, database: true } },
     });

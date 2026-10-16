@@ -37,7 +37,7 @@ a{color:#fff}
   function easeBack(x) { var c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); }
   function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   function text(str, x, y, size, color, weight, align, alpha) {
-    ctx.save(); ctx.globalAlpha = alpha === undefined ? 1 : alpha; ctx.fillStyle = color; ctx.textAlign = align || 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.save(); ctx.globalAlpha = ctx.globalAlpha * (alpha === undefined ? 1 : alpha); ctx.fillStyle = color; ctx.textAlign = align || 'left'; ctx.textBaseline = 'alphabetic';
     ctx.font = (weight || 700) + ' ' + size + 'px Inter, system-ui, sans-serif'; ctx.letterSpacing = (-size * 0.03) + 'px'; ctx.fillText(str, x, y); ctx.restore();
   }
   /* a line of text that slides up out of a mask */
@@ -376,7 +376,73 @@ a{color:#fff}
     else if (t < 12.9) { v6Fix(t - 6.4); var w = easeInOut(prog(t - 6.4, 0, 0.45)); if (w < 1) { ctx.save(); ctx.globalAlpha = 1 - w; v6Loss(6.3); ctx.restore(); } }
     else sceneCta(t);
   }
-  function frame(t) { (V === '2' ? frame2 : V === '3' ? frame3 : V === '4' ? frame4 : V === '5' ? frame5 : V === '6' ? frame6 : frame1)(t); }
+
+  /* ---------- videos 7, 8, 9: five-minute setup, three signs, reminders ---------- */
+  function slam(str, x, y, size, color, t0, t, align) {
+    var p = easeBack(prog(t, t0, t0 + 0.28)); if (p <= 0) return;
+    ctx.save(); ctx.translate(x, y); ctx.scale(p, p); ctx.globalAlpha = clamp(p * 1.5, 0, 1); text(str, 0, 0, size, color, 800, align || 'left'); ctx.restore();
+  }
+  /* video 7: setup speed-run */
+  function v7Setup(l) {
+    ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
+    var secs = Math.floor(298 * easeInOut(prog(l, 0.3, 8.7))), mm = Math.floor(secs / 60), ss = String(secs % 60).padStart(2, '0');
+    text('Set up Bookable', 80, 230, 78, INK, 800, 'left'); text('in about 5 minutes.', 80, 320, 78, RED, 800, 'left');
+    rr(80, 400, 360, 150, 30); ctx.fillStyle = INK; ctx.fill(); text(mm + ':' + ss, 260, 515, 110, '#fff', 800, 'center');
+    /* step 1 services */
+    var s1 = easeOut(prog(l, 0.3, 0.9)), s2 = easeOut(prog(l, 3.0, 3.6)), s3 = easeOut(prog(l, 5.8, 6.4));
+    function card(y, n, title, p, done) {
+      ctx.save(); ctx.globalAlpha = p; ctx.translate(0, (1 - p) * 60); ctx.shadowColor = 'rgba(12,31,44,.16)'; ctx.shadowBlur = 36; ctx.shadowOffsetY = 12; rr(80, y, 920, 400, 30); ctx.fillStyle = '#fff'; ctx.fill(); ctx.shadowColor = 'transparent';
+      ctx.beginPath(); ctx.arc(150, y + 70, 36, 0, Math.PI * 2); ctx.fillStyle = done ? '#1d6b43' : RED; ctx.fill(); if (done) tick(150, y + 70, 52, '#fff', 8); else text(String(n), 150, y + 90, 50, '#fff', 800, 'center');
+      text(title, 215, y + 88, 54, INK, 800, 'left'); ctx.restore(); return y;
+    }
+    card(600, 1, 'Add your services', s1, l > 2.8);
+    ['Haircut  £18', 'Skin fade  £22', 'Beard trim  £10'].forEach(function (s, i) { var q = easeBack(prog(l, 0.9 + i * 0.5, 1.2 + i * 0.5)); if (q <= 0) return; ctx.save(); ctx.translate(120 + i * 290, 780); ctx.scale(q, q); rr(0, 0, 270, 110, 22); ctx.fillStyle = '#e4eef4'; ctx.fill(); text(s.split('  ')[0], 135, 48, 36, INK, 700, 'center'); text(s.split('  ')[1], 135, 90, 36, RED, 800, 'center'); ctx.restore(); });
+    card(1030, 2, 'Set your hours', s2, l > 5.5);
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(function (d, i) { var q = easeOut(prog(l, 3.5 + i * 0.25, 3.9 + i * 0.25)), on = i < 6; ctx.save(); ctx.globalAlpha = s2; rr(120 + i * 122, 1200, 104, 190, 20); ctx.fillStyle = '#e4eef4'; ctx.fill(); if (on) { rr(120 + i * 122, 1390 - 190 * q, 104, 190 * q, 20); ctx.fillStyle = RED; ctx.fill(); } text(d, 172 + i * 122, 1420, 30, MUTED, 700, 'center'); ctx.restore(); });
+    card(1460, 3, 'Share your link', s3, l > 8.0);
+    var lp = easeBack(prog(l, 6.4, 6.9)); if (lp > 0) { ctx.save(); ctx.translate(540, 1690); ctx.scale(lp, lp); rr(-400, -50, 800, 100, 50); ctx.fillStyle = '#e4eef4'; ctx.fill(); text('mybookable.co.uk/you', -360, 18, 44, INK, 700, 'left'); if (l > 7.6) { ctx.beginPath(); ctx.arc(340, 0, 38, 0, Math.PI * 2); ctx.fillStyle = '#1d6b43'; ctx.fill(); tick(340, 0, 48, '#fff', 8); } ctx.restore(); }
+  }
+  function frame7(t) { ctx.setTransform(1, 0, 0, 1, 0, 0); if (t < 12.9) v7Setup(t); else sceneCta(t); }
+
+  /* video 8: three signs (dark, loud, fast cuts) */
+  function v8(l) {
+    ctx.fillStyle = INK; ctx.fillRect(0, 0, W, H);
+    var sc = l < 2.2 ? 0 : l < 4.8 ? 1 : l < 7.4 ? 2 : l < 10 ? 3 : 4, t0 = [0, 2.2, 4.8, 7.4, 10][sc], lt = l - t0;
+    ctx.save(); ctx.globalAlpha = 0.07; for (var i = 0; i < 12; i++) { ctx.fillStyle = '#fff'; ctx.fillRect(0, i * 160 + ((l * 40) % 160), W, 2); } ctx.restore();
+    if (sc === 0) { slam('3 signs', 80, 640, 200, '#fff', 0.1, lt); slam('you need a', 80, 840, 150, '#8fc4e3', 0.35, lt); slam('booking link.', 80, 1000, 150, '#fff', 0.6, lt); }
+    var signs = [['You type', '"what time suits?"', '20 times a day.'], ['Your diary is', 'a notebook,', 'DMs and memory.'], ['One no-show', 'and the slot', 'is gone.']];
+    if (sc >= 1 && sc <= 3) {
+      var s = signs[sc - 1];
+      ctx.fillStyle = RED; ctx.beginPath(); ctx.arc(190, 520, 110, 0, Math.PI * 2); ctx.fill(); slam(String(sc), 190, 565, 150, '#fff', 0.05, lt, 'center');
+      slam(s[0], 80, 880, 90, '#8fc4e3', 0.3, lt); slam(s[1], 80, 1040, 100, '#fff', 0.5, lt); slam(s[2], 80, 1190, 100, '#fff', 0.7, lt);
+    }
+    if (sc === 3 || sc === 4) { /* nothing extra */ }
+    if (sc === 4) { slam('Fix all 3.', 80, 760, 200, '#fff', 0.1, lt); slam('One link.', 80, 960, 150, '#8fc4e3', 0.5, lt); slam('Calendar.', 80, 1110, 150, '#8fc4e3', 0.75, lt); slam('Reminders.', 80, 1260, 150, '#8fc4e3', 1.0, lt); var lp = easeBack(prog(lt, 1.5, 2.0)); if (lp > 0) { ctx.save(); ctx.translate(540, 1560); ctx.scale(lp, lp); ctx.drawImage(imgs.logo, -190, -90, 180, 180); text('Bookable', 20, 40, 100, '#fff', 800, 'left'); ctx.restore(); } }
+    /* progress bar */
+    ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.fillRect(80, 1780, 920, 10); ctx.fillStyle = '#fff'; ctx.fillRect(80, 1780, 920 * clamp(l / 12.9, 0, 1), 10);
+  }
+  function frame8(t) { ctx.setTransform(1, 0, 0, 1, 0, 0); if (t < 12.9) v8(t); else sceneCta(t); }
+
+  /* video 9: reminders (a chat) */
+  function v9(l) {
+    ctx.fillStyle = '#e8efe9'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#0b3b2e'; ctx.fillRect(0, 0, W, 210); ctx.beginPath(); ctx.arc(130, 120, 56, 0, Math.PI * 2); ctx.fillStyle = '#9fb7ad'; ctx.fill(); text('S', 130, 140, 56, '#0b3b2e', 800, 'center'); text('Sam', 220, 112, 58, '#fff', 700, 'left'); text('online', 220, 160, 34, 'rgba(255,255,255,.7)', 500, 'left');
+    text('Reminders,', 80, 400, 112, INK, 800, 'left', easeOut(prog(l, 0.1, 0.6))); text('written for you.', 80, 520, 112, RED, 800, 'left', easeOut(prog(l, 0.25, 0.75)));
+    var msg = 'Hi Sam, reminder for your skin fade tomorrow at 10:00. Reply YES to confirm.';
+    var typed = msg.slice(0, Math.floor(msg.length * clamp((l - 1.0) / 3.0, 0, 1)));
+    /* owner's draft bar */
+    var dp = easeOut(prog(l, 0.8, 1.2)); ctx.save(); ctx.globalAlpha = dp; rr(60, 640, 960, 310, 34); ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(12,31,44,.15)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 10; ctx.fill(); ctx.shadowColor = 'transparent';
+    text('Ready to send', 100, 710, 36, MUTED, 600, 'left');
+    var words = typed.split(' '), line = '', y = 780; words.forEach(function (w) { var test = line ? line + ' ' + w : w; if (ctx.measureText ? true : true) { if (test.length > 36) { text(line, 100, y, 44, INK, 500, 'left'); y += 58; line = w; } else line = test; } }); text(line + (l < 4.2 && Math.floor(l * 3) % 2 === 0 ? '|' : ''), 100, y, 44, INK, 500, 'left'); ctx.restore();
+    /* send button */
+    var bp = easeBack(prog(l, 4.3, 4.7)); if (bp > 0) { var press = l > 5.1 && l < 5.35 ? 0.94 : 1; ctx.save(); ctx.translate(540, 1050); ctx.scale(bp * press, bp * press); rr(-330, -70, 660, 140, 70); ctx.fillStyle = '#1faa53'; ctx.fill(); text('Send on WhatsApp', 0, 24, 60, '#fff', 800, 'center'); ctx.restore(); }
+    /* sent bubble + reply */
+    var sp = easeOut(prog(l, 5.4, 5.9)); if (sp > 0) { ctx.save(); ctx.globalAlpha = sp; ctx.translate(0, (1 - sp) * 40); rr(300, 1180, 720, 230, 34); ctx.fillStyle = '#d8f3c9'; ctx.fill(); text('Hi Sam, reminder for your', 340, 1250, 40, INK, 500, 'left'); text('skin fade tomorrow at 10:00.', 340, 1304, 40, INK, 500, 'left'); text('Reply YES to confirm.', 340, 1358, 40, INK, 500, 'left'); text('✓✓', 960, 1396, 36, '#3b8fd1', 800, 'right'); ctx.restore(); }
+    var rp = easeBack(prog(l, 7.2, 7.6)); if (rp > 0) { ctx.save(); ctx.translate(180, 1560); ctx.scale(rp, rp); rr(-120, -60, 330, 120, 40); ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,.15)'; ctx.shadowBlur = 18; ctx.fill(); ctx.shadowColor = 'transparent'; text('YES 👍', 45, 20, 54, INK, 700, 'center'); ctx.restore(); }
+    var cp = easeBack(prog(l, 8.4, 8.9)); if (cp > 0) { ctx.save(); ctx.translate(540, 1740); ctx.scale(cp, cp); rr(-420, -70, 840, 140, 34); ctx.fillStyle = '#1d6b43'; ctx.fill(); tick(-360, 0, 60, '#fff', 10); text('Sam confirmed: 10:00 tomorrow', -300, 18, 46, '#fff', 800, 'left'); ctx.restore(); }
+  }
+  function frame9(t) { ctx.setTransform(1, 0, 0, 1, 0, 0); if (t < 12.9) v9(t); else sceneCta(t); }
+  function frame(t) { ({ '2': frame2, '3': frame3, '4': frame4, '5': frame5, '6': frame6, '7': frame7, '8': frame8, '9': frame9 }[V] || frame1)(t); }
 
 
   /* ---------- sound (all synthesised here, no samples) ---------- */
@@ -394,13 +460,26 @@ a{color:#fff}
     tone(0.15, 90, 1.2, 0.9, 'sine', 38); chime(0.45, 1046); chime(0.62, 1568);
     noise(1.9, 0.7, 400, 7000, 0.3); noise(2.35, 0.5, 6000, 900, 0.2);
     /* beat 2.4 -> 12.9 at 112 bpm */
-    var beat = 60 / (V === '5' ? 80 : V === '6' ? 124 : V === '4' ? 120 : 112), bass = [110, 110, 146.8, 130.8];
+    var beat = 60 / (V === '5' ? 80 : V === '6' ? 124 : V === '4' ? 120 : V === '7' ? 132 : V === '8' ? 100 : V === '9' ? 96 : 112), bass = [110, 110, 146.8, 130.8];
     for (var t = 2.4, n = 0; t < 12.9; t += beat, n++) {
       if (n % 1 === 0 && (n % 4 === 0 || n % 4 === 2)) kick(t);
       hat(t + beat / 2, 0.1); if (n % 4 === 1 || n % 4 === 3) noise(t, 0.12, 2400, 1800, 0.12);
       pluck(t, bass[n % 4] * 2);
     }
-    if (V === '4') {
+    if (V === '7') {
+      for (var k = 0; k < 18; k++) { tone(0.4 + k * 0.45, 600 + (k % 6) * 60, 0.05, 0.12, 'square'); }
+      [1.0, 1.5, 2.0].forEach(function (t, i) { chime(t, [784, 988, 1175][i]); }); chime(2.9, 1568); chime(3.1, 2093);
+      noise(2.9, 0.3, 500, 6000, 0.2); [3.9, 4.1, 4.3, 4.5, 4.7, 4.9, 5.1].forEach(function (t, i) { tone(t, 500 + i * 80, 0.08, 0.2, 'sine'); }); chime(5.7, 1568); chime(5.9, 2093);
+      noise(5.8, 0.3, 500, 6000, 0.2); chime(6.5, 988); chime(7.7, 1568); chime(7.85, 2093);
+    } else if (V === '8') {
+      [0.1, 0.35, 0.6, 2.3, 2.55, 2.8, 4.9, 5.15, 5.4, 7.5, 7.75, 8.0, 10.1, 10.5, 10.75, 11.0].forEach(function (t) { tone(t, 100, 0.25, 0.7, 'sine', 45); noise(t, 0.08, 1500, 400, 0.22); });
+      [2.2, 4.8, 7.4, 10.0].forEach(function (t) { noise(t - 0.2, 0.25, 300, 6000, 0.3); tone(t, 55, 0.6, 0.8, 'sine', 35); });
+      chime(11.6, 1046); chime(11.75, 1318); chime(11.9, 1568);
+    } else if (V === '9') {
+      for (var j = 0; j < 40; j++) { var tt = 1.0 + j * 0.075; if (tt < 4.0) tone(tt, 1700 + (j % 3) * 120, 0.03, 0.08, 'square'); }
+      tone(5.15, 880, 0.12, 0.3, 'sine'); tone(5.4, 1320, 0.3, 0.25, 'sine'); noise(5.45, 0.25, 400, 5000, 0.18);
+      chime(7.3, 784); chime(7.45, 988); chime(8.5, 1046); chime(8.65, 1318); chime(8.8, 1568);
+    } else if (V === '4') {
       [0.35, 0.85, 1.35, 1.85, 2.35, 2.85, 3.35, 3.85, 4.35, 4.85].forEach(function (t, i) { tone(t, 700 + (i % 3) * 90, 0.12, 0.22, 'sine'); tone(t, 520, 0.2, 0.08, 'square'); });
       noise(6.1, 0.8, 300, 7000, 0.35); tone(6.9, 140, 0.5, 0.5, 'sine', 60); chime(6.95, 1046); chime(7.1, 1318); chime(7.25, 1568);
       [8.4, 9.1, 9.8].forEach(function (t, i) { chime(t, [784, 988, 1175][i]); });

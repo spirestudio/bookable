@@ -18,6 +18,23 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const withCache = (res, seconds) => { const r = new Response(res.body, res); r.headers.set('cache-control', `public, max-age=${seconds}`); return r; };
 const asset = (env, url, path) => env.ASSETS.fetch(new Request(new URL(path, url).toString()));
 
+/* IndexNow: tells Bing, Yandex and other search engines about new posts the moment they go live. Runs from the hourly cron.
+   Google does not use IndexNow; it finds posts through the sitemap and the links between posts. */
+export async function indexNow(env, host, key) {
+  if (!key) return { sent: 0 };
+  const row = await env.DB.prepare("SELECT v FROM settings WHERE k = 'indexnow_sent'").first();
+  const done = new Set(row ? JSON.parse(row.v) : []), fresh = livePosts().filter(p => !done.has(p.slug));
+  if (!fresh.length) return { sent: 0 };
+  const urlList = ['https://' + host + '/blog/', 'https://' + host + '/', ...fresh.map(p => 'https://' + host + '/blog/' + p.slug + '/')];
+  const res = await fetch('https://api.indexnow.org/indexnow', { method: 'POST', headers: { 'content-type': 'application/json; charset=utf-8' }, body: JSON.stringify({ host, key, keyLocation: 'https://' + host + '/' + key + '.txt', urlList }) });
+  if (res.status === 200 || res.status === 202) {
+    await env.DB.prepare("INSERT INTO settings (k, v) VALUES ('indexnow_sent', ?1) ON CONFLICT(k) DO UPDATE SET v = ?1").bind(JSON.stringify([...done, ...fresh.map(p => p.slug)])).run();
+    return { sent: fresh.length };
+  }
+  console.error('indexnow failed', res.status);
+  return { sent: 0, status: res.status };
+}
+
 export async function blogRoute(req, env, url) {
   const path = url.pathname;
   if (req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });

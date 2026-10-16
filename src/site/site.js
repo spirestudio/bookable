@@ -27,3 +27,18 @@
     })
     .catch(function () { /* not signed in, or offline: the page works the same */ });
 })();
+
+/* contact / report-a-problem form: posts to /api/contact, which pings the owner on Telegram */
+(function () {
+  var f = document.getElementById('contactform'); if (!f) return;
+  var msg = document.getElementById('contactmsg');
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = f.elements.message.value.trim();
+    if (text.length < 5) { msg.textContent = 'Please tell us a bit more.'; return; }
+    var btn = f.querySelector('button'); btn.disabled = true; msg.textContent = 'Sending...';
+    fetch('/api/contact', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ message: text, email: f.elements.email.value.trim(), website: f.elements.website.value, page: document.referrer ? new URL(document.referrer).pathname : '' }) })
+      .then(function (r) { if (r.ok) { f.reset(); msg.textContent = 'Thank you, we have your message and will reply soon.'; } else { msg.textContent = r.status === 429 ? 'Too many messages, please try again later or email us.' : 'Could not send. Please email info@mybookable.co.uk.'; } btn.disabled = false; })
+      .catch(function () { msg.textContent = 'Could not send. Please email info@mybookable.co.uk.'; btn.disabled = false; });
+  });
+})();

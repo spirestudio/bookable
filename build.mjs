@@ -123,13 +123,13 @@ ${page.path && indexable ? `<script type="application/ld+json">${JSON.stringify(
   <a class="brand" href="/" aria-label="Bookable home"><i class="mark"></i>Bookable</a>
   <nav aria-label="Main">${nav}</nav>
   <form class="hsearch" action="/find/" method="get" role="search"><input type="search" name="q" placeholder="Search a business" aria-label="Search for a business" maxlength="50" autocomplete="off"><button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button></form>
-  <a class="login client" id="clientlogin" href="/client/">Customer login</a><a class="login owner" id="ownerlogin" href="/app/#/login">Owner login</a>
+  <a class="login client" id="clientlogin" href="/client/">Customer<span class="lg"> login</span></a><a class="login owner" id="ownerlogin" href="/app/#/login">Owner<span class="lg"> login</span></a>
 </div></header>
 <main id="main">${body}</main>
 <footer class="foot"><div class="wrap">
   <div><a class="brand" href="/"><i class="mark"></i>Bookable</a><p>Bookings for one-person businesses. Early access.</p></div>
   <div><h2>Built for</h2><ul><li><a href="/barbers/">Barbers</a></li><li><a href="/nail-technicians/">Nail technicians</a></li><li><a href="/dog-walkers/">Dog walkers</a></li></ul></div>
-  <div><h2>Bookable</h2><ul><li><a href="/find/">Find a business</a></li><li><a href="/blog/">Blog</a></li><li><a href="/pricing/">Pricing</a></li><li><a href="/app/#/login">Sign in</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/gdpr/">Data protection</a></li><li><a href="/terms/">Terms</a></li><li><a href="/payments/">Payments</a></li><li><a href="/llms.txt">For AI assistants</a></li></ul></div>
+  <div><h2>Bookable</h2><ul><li><a href="/find/">Find a business</a></li><li><a href="/blog/">Blog</a></li><li><a href="/pricing/">Pricing</a></li><li><a href="/app/#/login">Sign in</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/gdpr/">Data protection</a></li><li><a href="/terms/">Terms</a></li><li><a href="/contact/">Contact</a></li><li><a href="/payments/">Payments</a></li><li><a href="/llms.txt">For AI assistants</a></li></ul></div>
   <div class="legal">&copy; ${YEAR} Bookable</div>
 </div></footer>
 </body>
@@ -248,6 +248,7 @@ ${pages.map(p => `  <url><loc>${abs(p.path)}</loc><lastmod>${TODAY}</lastmod></u
 <!--BLOGURLS-->
 </urlset>
 `);
+write(cfg.indexNowKey + '.txt', cfg.indexNowKey);
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /client/\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write('llms.txt', `# Bookable
 

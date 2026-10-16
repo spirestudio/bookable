@@ -48,7 +48,7 @@ try {
   } else {
     const out = await evalJs('window.BookablePromo.encode()');
     const ext = out.type.includes('mp4') ? 'mp4' : 'webm';
-    fs.writeFileSync(path.join(HERE, `bookable-${({ 1: 'intro', 2: 'security', 3: 'pricing', 4: 'before-after', 5: 'while-you-sleep', 6: 'no-shows' })[VID]}.${ext}`), Buffer.from(out.data, 'base64'));
+    fs.writeFileSync(path.join(HERE, `bookable-${({ 1: 'intro', 2: 'security', 3: 'pricing', 4: 'before-after', 5: 'while-you-sleep', 6: 'no-shows', 7: 'setup-5-minutes', 8: 'three-signs', 9: 'reminders' })[VID]}.${ext}`), Buffer.from(out.data, 'base64'));
     console.log('recorded', out.type, ext);
   }
 } finally { try { ws?.close(); } catch { /* ignore */ } edge.kill(); server.close(); }

@@ -26,7 +26,7 @@ const timeOpts = (sel, from = 5, to = 23) => { let o = ''; for (let m = from * 6
 /* ---------- state: the server is the source of truth ---------- */
 let S = null;   // the signed-in business: its settings and its bookings
 let ME = null;  // the signed-in email
-let TWOFA = false;
+let TWOFA = false, TGON = false;
 let BILL = null, PAYINFO = '';   // this owner's plan status and payment instructions, from /api/me
 let P = null;   // a public booking page's data, as a client sees it
 async function api(method, path, body) {
@@ -52,7 +52,7 @@ async function flush() {
 }
 async function loadMe() {
   const r = await api('GET', '/api/me');
-  if (r.ok && r.data.email) { ME = r.data.email; TWOFA = !!r.data.twofa; BILL = r.data.billing || null; PAYINFO = r.data.payInfo || ''; S = r.data.doc ? { ...r.data.doc, bookings: r.data.bookings } : null; savedSlug = S && S.biz.slug; } else { ME = null; S = null; }
+  if (r.ok && r.data.email) { ME = r.data.email; TWOFA = !!r.data.twofa; TGON = !!r.data.telegram; BILL = r.data.billing || null; PAYINFO = r.data.payInfo || ''; S = r.data.doc ? { ...r.data.doc, bookings: r.data.bookings } : null; savedSlug = S && S.biz.slug; } else { ME = null; S = null; }
 }
 async function patchBooking(id, changes) {
   const b = S.bookings.find(x => x.id === id); if (!b) return false;
@@ -580,6 +580,8 @@ function vPlan() {
         ${b.status === 'trial' && b.trialEnd ? `<div class="stat"><span>First payment, ${fmtShort(parseYmd(b.trialEnd))}</span><b>${price}</b></div>` : ''}
         ${b.status === 'paid' && b.paidUntil ? `<div class="stat"><span>Next payment, ${fmtShort(parseYmd(b.paidUntil))}</span><b>${price}</b></div>` : ''}</div>
         ${showPrice ? `<div style="margin-top:18px"><b>How to pay</b><p class="muted" style="margin-top:6px;white-space:pre-wrap">${PAYINFO ? esc(PAYINFO) : 'Pay by bank transfer. We will message you with the details before your trial ends.'}</p>${PAYINFO ? `<p class="muted" style="margin-top:6px">Use ${esc(S.biz.name)} as the reference. We record your payment by hand, so it can take a day to show here.</p>` : ''}</div>` : ''}</section>
+      <section class="block"><h2>Help and feedback</h2><p class="muted" style="margin-bottom:14px">Something not working, or an idea? Tell us and we will reply to your email.</p><button class="btn ghost" data-act="feedback">Report a problem or send feedback</button></section>
+      <section class="block"><h2>Booking alerts on Telegram</h2><p class="muted" style="margin-bottom:14px">${TGON ? 'Connected. You get a message on Telegram whenever a client books through your link. Only the client name, service and time are sent.' : 'Get a Telegram message the moment a client books through your link. Free, and you can switch it off any time.'}</p><div style="display:flex;gap:10px;flex-wrap:wrap">${TGON ? '<button class="btn ghost" data-act="tg-off">Turn off alerts</button>' : '<button class="btn" data-act="tg-on">Connect Telegram</button>'}</div></section>
       <section class="block"><h2>Account</h2><p class="muted" style="margin-bottom:14px">${esc(ME || '')}</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" data-act="signout">Sign out</button><button class="btn ghost" data-act="signoutall">Sign out of every device</button><button class="btn ghost" data-act="twofa">${TWOFA ? 'Two-factor is on: manage' : 'Turn on two-factor sign-in'}</button><button class="btn danger" data-act="deleteacct">Delete my account</button></div></section>
     </div>`);
 }
@@ -740,6 +742,10 @@ document.addEventListener('click', e => {
   else if (a === 'twofa-go') { twofaStart(); }
   else if (a === 'twofa-enable') { const code = ($('#tfcode') || {}).value || ''; api('POST', '/api/2fa/enable', { code }).then(r => { if (!r.ok) { $('#tferr').textContent = r.data && r.data.error === 'invalid_code' ? 'That code is not right. Check your phone and try the newest code.' : failMsg(r); $('#tferr').hidden = false; return; } TWOFA = true; openModal('<h3>Two-factor is on</h3><p class="sub">Save these recovery codes somewhere safe. Each one works once if you lose your phone. They are only shown now.</p><pre class="codes">' + r.data.backup.join('\n') + '</pre><div class="acts"><button class="btn ghost" data-act="tfcopy">Copy codes</button><button class="btn" data-act="close">I have saved them</button></div>'); vPlan(); }); }
   else if (a === 'tfcopy') { const txt = ($('.codes') || {}).textContent || ''; navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast('Copied')); }
+  else if (a === 'feedback') { openModal('<h3>Report a problem or send feedback</h3><p class="sub">What were you trying to do, and what happened? We reply to ' + esc(ME || 'your email') + '.</p><label class="field"><span>Your message</span><textarea id="fbtext" rows="5" maxlength="1000"></textarea></label><p class="err" id="fberr" hidden></p><div class="acts"><button class="btn" data-act="feedback-send">Send</button><button class="btn ghost" data-act="close">Cancel</button></div>'); }
+  else if (a === 'feedback-send') { const t = (($('#fbtext') || {}).value || '').trim(); if (t.length < 5) { $('#fberr').textContent = 'Please write a little more.'; $('#fberr').hidden = false; return; } api('POST', '/api/contact', { message: t, email: ME || '' }).then(r => { if (!r.ok) { $('#fberr').textContent = r.status === 429 ? 'Too many messages. Try again later.' : 'Could not send. Email info@mybookable.co.uk instead.'; $('#fberr').hidden = false; return; } closeModal(); toast('Thank you, we got your message'); }); }
+  else if (a === 'tg-on') { api('POST', '/api/telegram/link', {}).then(r => { if (!r.ok) return toast('Telegram is not available right now'); openModal('<h3>Connect Telegram</h3><p class="sub">Press the button, then press Start in Telegram. Come back here and reload this page to see it connected.</p><div class="acts"><a class="btn" href="' + r.data.url + '" target="_blank" rel="noopener">Open Telegram</a><button class="btn ghost" data-act="close">Close</button></div>'); }); }
+  else if (a === 'tg-off') { api('POST', '/api/telegram/unlink', {}).then(() => { TGON = false; vPlan(); toast('Telegram alerts turned off'); }); }
   else if (a === 'twofa-off') { const pw = ($('#tfpw') || {}).value || '', code = ($('#tfoff') || {}).value || ''; api('POST', '/api/2fa/disable', { password: pw, code }).then(r => { if (!r.ok) { $('#tferr').textContent = r.status === 429 ? 'Too many tries. Wait a few minutes.' : 'Your password or code is not right.'; $('#tferr').hidden = false; return; } TWOFA = false; closeModal(); vPlan(); toast('Two-factor turned off'); }); }
   else if (a === 'signoutall') { if (t.dataset.sure) { api('POST', '/api/logout-all').then(() => { ME = null; S = null; location.hash = '#/login'; route(); }); } else { t.dataset.sure = '1'; t.textContent = 'Tap again to sign out everywhere'; } }
   else if (a === 'deleteacct') { if (t.dataset.sure) { api('DELETE', '/api/account').then(r => { if (r.ok) { ME = null; S = null; location.hash = '#/signup'; route(); } else toast(failMsg(r)); }); } else { t.dataset.sure = 1; t.textContent = 'Tap again to delete everything'; } }

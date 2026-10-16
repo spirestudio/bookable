@@ -1,5 +1,6 @@
 {
   "name": "Bookable",
   "url": "https://mybookable.co.uk",
-  "themeColor": "#f3f8fb"
+  "themeColor": "#f3f8fb",
+  "indexNowKey": "b5f4827acdc073ab2fc135e3a47268c1"
 }
