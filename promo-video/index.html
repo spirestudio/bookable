@@ -442,7 +442,108 @@ a{color:#fff}
     var cp = easeBack(prog(l, 8.4, 8.9)); if (cp > 0) { ctx.save(); ctx.translate(540, 1740); ctx.scale(cp, cp); rr(-420, -70, 840, 140, 34); ctx.fillStyle = '#1d6b43'; ctx.fill(); tick(-360, 0, 60, '#fff', 10); text('Sam confirmed: 10:00 tomorrow', -300, 18, 46, '#fff', 800, 'left'); ctx.restore(); }
   }
   function frame9(t) { ctx.setTransform(1, 0, 0, 1, 0, 0); if (t < 12.9) v9(t); else sceneCta(t); }
-  function frame(t) { ({ '2': frame2, '3': frame3, '4': frame4, '5': frame5, '6': frame6, '7': frame7, '8': frame8, '9': frame9 }[V] || frame1)(t); }
+  /* ---------- video 10: the client's phone, a real booking from start to finish ---------- */
+  function tapAt(cx, cy, tt) { if (tt < 0 || tt > 0.6) return; var p = tt / 0.6; ctx.save(); ctx.globalAlpha = 0.45 * (1 - p); ctx.fillStyle = RED; ctx.beginPath(); ctx.arc(cx, cy, 30 + 70 * p, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+  function uiBar(sx, sy, sw, title, sub) {
+    ctx.fillStyle = RED; ctx.fillRect(sx, sy, sw, 190); ctx.drawImage(imgs.logo, sx + 36, sy + 62, 76, 76);
+    text('Demo Barbers', sx + 132, sy + 100, 40, '#fff', 800, 'left'); text('Lichfield', sx + 132, sy + 140, 28, 'rgba(255,255,255,.75)', 500, 'left');
+    text(title, sx + 36, sy + 270, 54, INK, 800, 'left'); if (sub) text(sub, sx + 36, sy + 318, 30, MUTED, 500, 'left');
+  }
+  function v10(l) {
+    ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = RED; ctx.beginPath(); ctx.arc(W / 2, 1230, 760 + Math.sin(l * 1.2) * 14, 0, Math.PI * 2); ctx.fill();
+    maskLine('Your client’s view.', 80, 250, 100, INK, 0.1, l); maskLine('No app. No account.', 80, 360, 66, RED, 0.35, l, 700);
+    var x = 190, y = 470 + Math.sin(l * 1.4) * 7, w = 700, h = 1250, sx = x + 24, sy = y + 24, sw = w - 48, sh = h - 48;
+    var pin = easeOut(prog(l, 0, 0.7)); ctx.save(); ctx.globalAlpha = pin; ctx.translate(0, (1 - pin) * 120);
+    ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 80; ctx.shadowOffsetY = 40; rr(x, y, w, h, 92); ctx.fillStyle = '#0c1f2c'; ctx.fill(); ctx.shadowColor = 'transparent';
+    rr(sx, sy, sw, sh, 70); ctx.fillStyle = '#fff'; ctx.fill(); ctx.save(); rr(sx, sy, sw, sh, 70); ctx.clip();
+    var step = l < 3.2 ? 0 : l < 6.4 ? 1 : l < 9.6 ? 2 : 3, ls = l - [0, 3.2, 6.4, 9.6][step], sl = (1 - easeOut(prog(ls, 0, 0.45))) * sw * (step ? 1 : 0);
+    ctx.save(); ctx.translate(sl, 0);
+    if (step === 0) {
+      uiBar(sx, sy, sw, 'Choose a service', 'Free times update live');
+      [['Haircut', '30 min', '£18'], ['Skin fade', '45 min', '£22'], ['Beard trim', '20 min', '£10']].forEach(function (s, i) {
+        var on = i === 1 && ls > 2.0, ry = sy + 380 + i * 210;
+        rr(sx + 30, ry, sw - 60, 170, 30); ctx.fillStyle = on ? RED : '#eef4f8'; ctx.fill();
+        text(s[0], sx + 70, ry + 78, 50, on ? '#fff' : INK, 800, 'left'); text(s[1], sx + 70, ry + 124, 32, on ? 'rgba(255,255,255,.8)' : MUTED, 500, 'left'); text(s[2], sx + sw - 70, ry + 100, 56, on ? '#fff' : RED, 800, 'right');
+      });
+      tapAt(sx + sw / 2, sy + 380 + 210 + 85, ls - 1.9);
+    } else if (step === 1) {
+      uiBar(sx, sy, sw, 'Pick a time', 'Skin fade, 45 min');
+      ['Mon 20', 'Tue 21', 'Wed 22'].forEach(function (d, i) { var on = i === 1; rr(sx + 30 + i * 200, sy + 360, 184, 100, 26); ctx.fillStyle = on ? RED : '#eef4f8'; ctx.fill(); text(d, sx + 122 + i * 200, sy + 424, 38, on ? '#fff' : INK, 700, 'center'); });
+      var times = ['10:00', '10:45', '11:00', '11:45', '12:30', '13:15', '14:00', '14:45', '15:30'], gone = [1, 5];
+      times.forEach(function (tm, i) {
+        var cx = sx + 30 + (i % 3) * 200, cy = sy + 520 + Math.floor(i / 3) * 150, pop = easeBack(prog(ls, 0.3 + i * 0.05, 0.6 + i * 0.05)), on = i === 2 && ls > 1.95;
+        if (pop <= 0) return; ctx.save(); ctx.translate(cx + 92, cy + 55); ctx.scale(pop, pop); rr(-92, -55, 184, 110, 26); ctx.fillStyle = on ? RED : gone.indexOf(i) >= 0 ? '#f1f4f6' : '#fff'; ctx.fill(); ctx.strokeStyle = on ? RED : '#c6d6e0'; ctx.lineWidth = 3; ctx.stroke();
+        text(tm, 0, 14, 40, on ? '#fff' : gone.indexOf(i) >= 0 ? '#aebcc6' : INK, 700, 'center'); ctx.restore();
+      });
+      tapAt(sx + 30 + 2 * 200 / 2 + 92 - 100, sy + 520 + 55, ls - 1.9);
+    } else if (step === 2) {
+      uiBar(sx, sy, sw, 'Your details', 'Tue 21 Oct, 11:00');
+      var nm = 'Sam Carter'.slice(0, Math.floor(10 * clamp((ls - 0.5) / 1.0, 0, 1))), ph = '07700 900123'.slice(0, Math.floor(12 * clamp((ls - 1.5) / 1.1, 0, 1)));
+      [['Name', nm], ['Phone', ph]].forEach(function (f, i) { var fy = sy + 380 + i * 190; text(f[0], sx + 40, fy, 32, MUTED, 600, 'left'); rr(sx + 30, fy + 20, sw - 60, 110, 24); ctx.fillStyle = '#eef4f8'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = (i === 0 ? ls < 1.5 : ls >= 1.5 && ls < 2.7) ? RED : 'transparent'; ctx.stroke(); text(f[1] + ((i === 0 ? ls < 1.5 : ls >= 1.5 && ls < 2.7) && Math.floor(ls * 3) % 2 === 0 ? '|' : ''), sx + 60, fy + 92, 44, INK, 600, 'left'); });
+      var press = ls > 2.7 && ls < 2.95 ? 0.95 : 1; ctx.save(); ctx.translate(sx + sw / 2, sy + 880); ctx.scale(press, press); rr(-280, -62, 560, 124, 62); ctx.fillStyle = RED; ctx.fill(); text('Book now', 0, 20, 54, '#fff', 800, 'center'); ctx.restore();
+      tapAt(sx + sw / 2, sy + 880, ls - 2.7);
+    } else {
+      var p = easeBack(prog(ls, 0.15, 0.75)); ctx.fillStyle = '#e7f4ec'; ctx.fillRect(sx, sy, sw, sh);
+      ctx.save(); ctx.translate(sx + sw / 2, sy + 360); ctx.scale(p, p); ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI * 2); ctx.fillStyle = '#1d6b43'; ctx.fill(); tick(0, 0, 150, '#fff', 22); ctx.restore();
+      var q = easeOut(prog(ls, 0.6, 1.1)); text('You’re booked in', sx + sw / 2, sy + 640 + (1 - q) * 40, 62, INK, 800, 'center', q);
+      text('Skin fade · Tue 21 Oct · 11:00', sx + sw / 2, sy + 710, 36, MUTED, 600, 'center', q);
+      var r = easeBack(prog(ls, 1.4, 1.9)); if (r > 0) { ctx.save(); ctx.translate(sx + sw / 2, sy + 900); ctx.scale(r, r); rr(-290, -70, 580, 140, 34); ctx.fillStyle = '#fff'; ctx.fill(); text('A reminder is on its way', 0, 14, 38, INK, 700, 'center'); ctx.restore(); }
+    }
+    ctx.restore(); ctx.restore(); ctx.restore();
+    var cap = ['1  Pick a service', '2  Pick a free time', '3  Add your details', '4  Done. 30 seconds.'][step];
+    text(cap, W / 2, 1815, 56, '#fff', 800, 'center');
+  }
+  function frame10(t) { ctx.setTransform(1, 0, 0, 1, 0, 0); if (t < 12.9) v10(t); else sceneCta(t); }
+
+  /* ---------- video 11: big numbers, full-screen colour panels ---------- */
+  function v11(l) {
+    var PL = 12.9 / 4, idx = Math.min(3, Math.floor(l / PL)), lt = l - idx * PL;
+    var conf = [
+      { bg: RED, fg: '#fff', sub: '#8fc4e3', big: function (q) { return String(Math.max(0, Math.round(14 * (1 - easeOut(clamp(q / 1.6, 0, 1)))))); }, line1: 'double bookings.', line2: 'The calendar will not allow it.', unit: '' },
+      { bg: INK, fg: '#fff', sub: '#8fc4e3', big: function (q) { return String(Math.min(7, Math.round(7 * easeOut(clamp(q / 1.2, 0, 1))))); }, line1: 'days free.', line2: 'No card while we are in early access.', unit: '' },
+      { bg: CREAM, fg: INK, sub: RED, big: function (q) { return String(Math.round(30 * easeOut(clamp(q / 1.6, 0, 1)))); }, line1: 'seconds for a client', line2: 'to book. No account needed.', unit: 's' },
+      { bg: '#dcecf5', fg: INK, sub: RED, big: function () { return '£14.99'; }, line1: 'a month after that.', line2: 'Cancel any time. Deposits and reminders included.', unit: '' }
+    ];
+    function panel(i, off, qq) {
+      var c = conf[i], q = qq === undefined ? lt : qq;
+      ctx.save(); ctx.translate(off, 0); ctx.fillStyle = c.bg; ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 0.08; ctx.fillStyle = c.fg; for (var k = 0; k < 6; k++) ctx.fillRect(0, 300 + k * 240, W, 3); ctx.globalAlpha = 1;
+      ctx.drawImage(imgs.logo, 80, 100, 90, 90); text('Bookable', 190, 168, 54, c.fg, 800, 'left');
+      var s = i === 3 ? 250 : i === 2 ? 480 : 560, bigStr = c.big(q) + c.unit, pop = easeBack(prog(q, 0.05, 0.5));
+      ctx.save(); ctx.translate(80, 1010); ctx.scale(0.8 + 0.2 * pop, 0.8 + 0.2 * pop); ctx.globalAlpha = clamp(pop * 2, 0, 1); text(bigStr, 0, 0, s, c.fg, 800, 'left'); ctx.restore();
+      maskLine(c.line1, 80, 1190, 96, c.sub, 0.5, q); maskLine(c.line2, 80, 1290, 44, c.fg, 0.75, q, 500);
+      ctx.fillStyle = c.fg; ctx.globalAlpha = 0.2; ctx.fillRect(80, 1780, 920, 8); ctx.globalAlpha = 1; ctx.fillRect(80, 1780, 920 * ((i + prog(q, 0, PL)) / 4), 8);
+      ctx.restore();
+    }
+    if (idx > 0 && lt < 0.5) { panel(idx - 1, 0, PL); }
+    var wipe = idx > 0 ? (1 - easeInOut(prog(lt, 0, 0.5))) * W : 0; panel(idx, wipe);
+  }
+  function frame11(t) { ctx.setTransform(1, 0, 0, 1, 0, 0); if (t < 12.9) v11(t); else sceneCta(t); }
+
+  /* ---------- video 12: everything in one link (bento grid) ---------- */
+  function tile(i, x, y, w, h, bg, draw) {
+    var p = easeBack(prog(frameT, 0.7 + i * 0.42, 1.15 + i * 0.42)); if (p <= 0) return; var pulse = frameT > 10.4 ? 1 + 0.012 * Math.sin((frameT - 10.4) * 6 + i) : 1;
+    ctx.save(); ctx.translate(x + w / 2, y + h / 2); ctx.scale(p * pulse, p * pulse); ctx.globalAlpha = clamp(p * 1.6, 0, 1); ctx.translate(-w / 2, -h / 2);
+    ctx.shadowColor = 'rgba(12,31,44,.18)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 16; rr(0, 0, w, h, 40); ctx.fillStyle = bg; ctx.fill(); ctx.shadowColor = 'transparent';
+    ctx.save(); rr(0, 0, w, h, 40); ctx.clip(); draw(w, h, frameT - (0.7 + i * 0.42)); ctx.restore(); ctx.restore();
+  }
+  var frameT = 0;
+  function v12(l) {
+    frameT = l; ctx.fillStyle = '#e8f0f5'; ctx.fillRect(0, 0, W, H);
+    maskLine('Everything.', 60, 230, 130, INK, 0.05, l, 800); maskLine('One link.', 60, 345, 130, RED, 0.3, l, 800);
+    var cw = 466, X1 = 60, X2 = 60 + cw + 28;
+    tile(0, 60, 400, 960, 290, '#fff', function (w, h) { ctx.drawImage(imgs.logo, 50, 60, 130, 130); text('mybookable.co.uk/you', 215, 125, 52, INK, 800, 'left'); text('Your booking link, ready for your Instagram bio.', 215, 185, 32, MUTED, 500, 'left'); rr(50, 215, 220, 52, 26); ctx.fillStyle = '#e4eef4'; ctx.fill(); text('Link in bio', 160, 252, 30, RED, 800, 'center'); });
+    tile(1, X1, 718, cw, 540, '#fff', function (w, h) { text('Calendar', 36, 90, 52, INK, 800, 'left'); text('No double bookings', 36, 130, 28, MUTED, 500, 'left'); var cwid = (w - 60) / 5; ['M', 'T', 'W', 'T', 'F'].forEach(function (d, i) { text(d, 30 + cwid * i + cwid / 2, 200, 28, MUTED, 700, 'center'); ctx.fillStyle = '#eef4f8'; rr(30 + cwid * i + 4, 218, cwid - 8, 290, 14); ctx.fill(); }); [[0, 0, 70, 1], [0, 90, 50, 0], [1, 30, 90, 0], [1, 150, 60, 1], [2, 10, 60, 1], [2, 100, 80, 0], [3, 50, 70, 0], [3, 140, 60, 1], [4, 0, 50, 0], [4, 80, 100, 1]].forEach(function (b) { rr(30 + cwid * b[0] + 8, 224 + b[1], cwid - 16, b[2] - 8, 10); ctx.fillStyle = b[3] ? RED : '#8fc4e3'; ctx.fill(); }); });
+    tile(2, X2, 718, cw, 256, RED, function (w, h, a) { text('Reminders', 36, 80, 46, '#fff', 800, 'left'); rr(30, 110, w - 60, 110, 28); ctx.fillStyle = '#d8f3c9'; ctx.fill(); text('See you tomorrow at 10', 52, 160, 28, INK, 600, 'left'); text('Sam replied YES ✓', 52, 198, 28, '#1d6b43', 800, 'left'); });
+    tile(3, X2, 1002, cw, 256, '#fff', function (w, h) { text('Deposits', 36, 80, 46, INK, 800, 'left'); text('£5', 36, 190, 100, RED, 800, 'left'); rr(w - 220, 120, 190, 80, 40); ctx.fillStyle = '#1d6b43'; ctx.fill(); text('Paid ✓', w - 125, 172, 34, '#fff', 800, 'center'); });
+    tile(4, X1, 1286, cw, 300, INK, function (w, h, a) { text('2-factor', 36, 80, 46, '#fff', 800, 'left'); var code = String(482913); for (var i = 0; i < 6; i++) { rr(30 + i * 68, 130, 58, 90, 14); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill(); text(code[i], 59 + i * 68, 195, 52, '#fff', 800, 'center'); } text('Sign-in protected', 36, 262, 28, '#8fc4e3', 600, 'left'); });
+    tile(5, X2, 1286, cw, 300, '#fff', function (w, h) { text('Telegram alerts', 36, 80, 44, INK, 800, 'left'); rr(30, 110, w - 60, 150, 28); ctx.fillStyle = '#e4eef4'; ctx.fill(); text('📅 New booking', 52, 165, 34, INK, 800, 'left'); text('Sam · Skin fade · 11:00', 52, 215, 30, MUTED, 600, 'left'); });
+    tile(6, 60, 1614, 960, 210, RED, function (w, h) { text('Free for 7 days.', 60, 100, 88, '#fff', 800, 'left'); text('Then £14.99 a month. Cancel any time.', 60, 160, 38, 'rgba(255,255,255,.85)', 500, 'left'); });
+  }
+  function frame12(t) { ctx.setTransform(1, 0, 0, 1, 0, 0); if (t < 12.9) v12(t); else sceneCta(t); }
+
+  function frame(t) { ({ '10': frame10, '11': frame11, '12': frame12, '2': frame2, '3': frame3, '4': frame4, '5': frame5, '6': frame6, '7': frame7, '8': frame8, '9': frame9 }[V] || frame1)(t); }
 
 
   /* ---------- sound (all synthesised here, no samples) ---------- */
@@ -460,13 +561,28 @@ a{color:#fff}
     tone(0.15, 90, 1.2, 0.9, 'sine', 38); chime(0.45, 1046); chime(0.62, 1568);
     noise(1.9, 0.7, 400, 7000, 0.3); noise(2.35, 0.5, 6000, 900, 0.2);
     /* beat 2.4 -> 12.9 at 112 bpm */
-    var beat = 60 / (V === '5' ? 80 : V === '6' ? 124 : V === '4' ? 120 : V === '7' ? 132 : V === '8' ? 100 : V === '9' ? 96 : 112), bass = [110, 110, 146.8, 130.8];
+    var beat = 60 / (V === '5' ? 80 : V === '6' ? 124 : V === '4' ? 120 : V === '7' ? 132 : V === '8' ? 100 : V === '9' ? 96 : V === '10' ? 104 : V === '11' ? 128 : V === '12' ? 108 : 112), bass = [110, 110, 146.8, 130.8];
     for (var t = 2.4, n = 0; t < 12.9; t += beat, n++) {
       if (n % 1 === 0 && (n % 4 === 0 || n % 4 === 2)) kick(t);
       hat(t + beat / 2, 0.1); if (n % 4 === 1 || n % 4 === 3) noise(t, 0.12, 2400, 1800, 0.12);
       pluck(t, bass[n % 4] * 2);
     }
-    if (V === '7') {
+    if (V === '10') {
+      [2.0, 5.2, 9.0].forEach(function (t) { tone(t, 1200, 0.06, 0.3, 'sine'); tone(t + 0.01, 600, 0.1, 0.25, 'sine'); });
+      [3.2, 6.4, 9.6].forEach(function (t) { noise(t - 0.1, 0.4, 600, 6000, 0.25); });
+      for (var k = 0; k < 20; k++) { tone(7.0 + k * 0.1, 700 + (k % 5) * 70, 0.04, 0.12, 'square'); }
+      [9.8, 10.05, 10.3].forEach(function (t, i) { chime(t, [784, 988, 1318][i]); }); tone(9.8, 120, 0.4, 0.5, 'sine', 60);
+    } else if (V === '11') {
+      var PLs = 12.9 / 4;
+      [PLs, PLs * 2, PLs * 3].forEach(function (t) { noise(t - 0.15, 0.3, 500, 7000, 0.3); tone(t, 70, 0.7, 0.9, 'sine', 38); chime(t + 0.05, 1046); });
+      [0.1, PLs + 0.1, PLs * 2 + 0.1, PLs * 3 + 0.1].forEach(function (t) { tone(t, 90, 0.6, 0.8, 'sine', 42); });
+      for (var c1 = 0; c1 < 12; c1++) tone(0.2 + c1 * 0.12, 500 + c1 * 40, 0.05, 0.14, 'sine');
+      for (var c2 = 0; c2 < 8; c2++) tone(PLs + 0.2 + c2 * 0.14, 600 + c2 * 60, 0.05, 0.14, 'sine');
+      for (var c3 = 0; c3 < 14; c3++) tone(PLs * 2 + 0.2 + c3 * 0.11, 550 + c3 * 35, 0.05, 0.14, 'sine');
+    } else if (V === '12') {
+      for (var j = 0; j < 7; j++) { var pt = 0.7 + j * 0.42; tone(pt, 420 + j * 50, 0.18, 0.5, 'sine', 160); chime(pt + 0.03, [659, 784, 880, 988, 1175, 1318, 1568][j]); }
+      noise(10.3, 0.4, 500, 7000, 0.25); chime(11.0, 1046); chime(11.15, 1318); chime(11.3, 1568);
+    } else if (V === '7') {
       for (var k = 0; k < 18; k++) { tone(0.4 + k * 0.45, 600 + (k % 6) * 60, 0.05, 0.12, 'square'); }
       [1.0, 1.5, 2.0].forEach(function (t, i) { chime(t, [784, 988, 1175][i]); }); chime(2.9, 1568); chime(3.1, 2093);
       noise(2.9, 0.3, 500, 6000, 0.2); [3.9, 4.1, 4.3, 4.5, 4.7, 4.9, 5.1].forEach(function (t, i) { tone(t, 500 + i * 80, 0.08, 0.2, 'sine'); }); chime(5.7, 1568); chime(5.9, 2093);

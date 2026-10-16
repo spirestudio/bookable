@@ -53,7 +53,7 @@ const img = (name, alt, { eager } = {}) => {
 /* ---------- static files ---------- */
 const staticDir = path.join(ROOT, 'src/static');
 const OG = {};
-for (const f of ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png']) if (fs.existsSync(path.join(staticDir, f))) write(f, fs.readFileSync(path.join(staticDir, f)));
+for (const f of ['qr.js', 'favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png']) if (fs.existsSync(path.join(staticDir, f))) write(f, fs.readFileSync(path.join(staticDir, f)));
 if (fs.existsSync(path.join(staticDir, '.well-known/security.txt'))) write('.well-known/security.txt', fs.readFileSync(path.join(staticDir, '.well-known/security.txt')));
 const ogDir = path.join(staticDir, 'og');
 if (fs.existsSync(ogDir)) for (const f of fs.readdirSync(ogDir).filter(f => f.endsWith('.png'))) OG[f.replace('.png', '')] = emit('og-' + f.replace('.png', ''), '.png', fs.readFileSync(path.join(ogDir, f)));

@@ -14,7 +14,7 @@
     "directory": "dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*", "/blog", "/blog/*", "/sitemap.xml", "/", "/pricing/", "/barbers/", "/nail-technicians/", "/dog-walkers/", "/find/", "/contact/"]
+    "run_worker_first": ["/api/*", "/blog", "/blog/*", "/sitemap.xml", "/", "/pricing/", "/barbers/", "/nail-technicians/", "/dog-walkers/", "/find/", "/contact/", "/__scheduled"]
   },
   "d1_databases": [
     {

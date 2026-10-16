@@ -670,6 +670,7 @@ ${ctaBand(`Start your 7 days free`, `Set up your booking page in a few minutes. 
 <li>Payment records (amount, date, method): up to 6 years, as required for accounts and tax.</li>
 <li>Sign-in sessions: until they expire or you sign out.</li>
 <li>Anti-abuse records (IP addresses, phone numbers used for bookings): deleted automatically within about 24 hours.</li>
+<li>Waiting list entries (name, phone number, preferred day): removed automatically once the preferred day has passed, or after 60 days, or sooner if the business removes them.</li>
 </ul>
 
 <h2 style="margin-top:36px">Your rights</h2>

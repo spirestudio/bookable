@@ -52,7 +52,7 @@ async function flush() {
 }
 async function loadMe() {
   const r = await api('GET', '/api/me');
-  if (r.ok && r.data.email) { ME = r.data.email; TWOFA = !!r.data.twofa; TGON = !!r.data.telegram; BILL = r.data.billing || null; PAYINFO = r.data.payInfo || ''; S = r.data.doc ? { ...r.data.doc, bookings: r.data.bookings } : null; savedSlug = S && S.biz.slug; } else { ME = null; S = null; }
+  if (r.ok && r.data.email) { ME = r.data.email; TWOFA = !!r.data.twofa; TGON = !!r.data.telegram; BILL = r.data.billing || null; PAYINFO = r.data.payInfo || ''; S = r.data.doc ? { ...r.data.doc, bookings: r.data.bookings, waitlist: r.data.waitlist || [] } : null; savedSlug = S && S.biz.slug; } else { ME = null; S = null; }
 }
 async function patchBooking(id, changes) {
   const b = S.bookings.find(x => x.id === id); if (!b) return false;
@@ -295,6 +295,7 @@ function vToday() {
       <section class="block"><h2>Today's schedule</h2>
         ${todays.length ? `<div class="rows">${todays.map(b => `<button class="row ${b.status}" data-act="open" data-id="${b.id}"><span class="t">${b.time}</span><span class="who2">${avatar(b.name)}<span><span class="n">${esc(b.name)}</span><br><span class="s">${esc(b.svcName)} · ${dur(b.mins)}</span></span></span><span class="tag ${b.status === 'done' ? 'ok' : ''}">${tagText(b)}</span></button>`).join('')}</div>` : `<p class="muted">Nothing on today.</p>`}
       </section>
+      ${waitlistBlock()}
     </div>
     <aside>
       <section class="block"><h2>Your booking link</h2>
@@ -413,6 +414,7 @@ function openDetail(id) {
   openModal(`<h3>${esc(b.name)}</h3><p class="sub">${fmtLong(parseYmd(b.date))} at ${b.time}</p>
     <div class="facts" style="margin-top:0"><div><span>Service</span><b style="font-weight:500">${esc(b.svcName)}</b></div><div><span>Length</span><b style="font-weight:500">${dur(b.mins)}</b></div><div><span>Price</span><b style="font-weight:500">${money(b.price)}</b></div><div><span>Mobile</span><a href="tel:${esc(b.phone)}">${esc(b.phone)}</a></div>${b.deposit ? `<div><span>Deposit</span><b style="font-weight:500">${money(b.deposit)} · ${b.depositPaid ? 'received' : 'waiting' + (b.depositDue ? ', held until ' + new Date(b.depositDue).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }) : '')}</b></div>` : ''}${b.note ? `<div><span>Note</span><b style="font-weight:500;text-align:right">${esc(b.note)}</b></div>` : ''}</div>
     <div class="acts"><a class="btn" href="${waLink(b.phone, 'Hi ' + b.name.split(' ')[0] + ', ')}" target="_blank" rel="noopener">Message on WhatsApp</a>
+    ${b.status === 'booked' && endOf(b) > Date.now() ? `<a class="btn" target="_blank" rel="noopener" href="${waLink(b.phone, reminderText(b))}" data-act="sent" data-id="${b.id}" data-key="reminded">Send reminder</a>` : ''}
     ${b.status === 'booked' && b.deposit ? `<button class="btn" data-act="dep" data-id="${b.id}" data-v="${b.depositPaid ? 0 : 1}">${b.depositPaid ? 'Deposit not received' : 'Mark deposit received'}</button>` : ''}${b.status === 'booked' ? `<button class="btn ghost" data-act="done" data-id="${b.id}">Mark as done</button><button class="btn danger" data-act="cancel1" data-id="${b.id}">Cancel booking</button>` : `<span class="tag" style="align-self:center">${b.status === 'done' ? 'Marked as done' : 'Cancelled'}</span>`}
     <button class="btn danger" data-act="del1" data-id="${b.id}">Delete booking</button><button class="btn ghost" data-act="close">Close</button></div>`);
 }
@@ -480,6 +482,7 @@ function vPage() {
     <div class="editor"><div>
       <section class="block"><h2>Your booking link</h2>
         <div class="linkbox"><input type="text" readonly value="${esc(bookingLink())}" aria-label="Your booking link"><button class="btn" data-act="copylink">Copy</button></div>
+        <div id="qrwrap" style="margin-top:18px"><h3 style="font-size:15px;margin:0 0 6px">QR code</h3><p class="small muted" style="margin:0 0 12px">Print it for your shop window or mirror, or put it on a business card. Phones open your booking page when they scan it.</p><div id="qrbox" style="width:200px;height:200px;border:1px solid var(--line,#d5e0e8);border-radius:12px;overflow:hidden"></div><div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn ghost sm" data-act="qr-png">Download picture</button></div></div>
         <label class="field" style="margin-top:14px"><span>Link name</span><input type="text" data-model="biz.slug" data-slug="1" value="${esc(S.biz.slug)}" autocomplete="off"><small>Letters, numbers and dashes only.</small></label>
       </section>
       <section class="block"><h2>About you</h2>
@@ -514,6 +517,7 @@ function vPage() {
     </div>
     <aside><h2>How it looks on a phone</h2><div class="phone"><div class="bar">Your booking page</div><div class="screen" id="preview"></div></div></aside></div>`);
   renderPreview();
+  loadQr();
 }
 function svcRows() {
   return S.services.map(s => `<div class="svc-row" data-sid="${s.id}">
@@ -528,6 +532,31 @@ function svcRows() {
 function renderPreview() { const p = $('#preview'); if (p) { const c = document.createElement('div'); c.className = 'client pv'; p.innerHTML = ''; p.appendChild(c); clientRender(c, { preview: true }); } }
 
 /* ---------- reminders ---------- */
+/* ---------- clients: who has booked, and who has gone quiet ---------- */
+function clientList() {
+  const today = ymd(new Date()), map = new Map();
+  S.bookings.filter(b => b.source !== 'sample' && b.status !== 'cancelled').forEach(b => {
+    const k = normPhone(b.phone) || b.name.toLowerCase(), c = map.get(k) || { name: b.name, phone: b.phone, visits: 0, last: '', next: '', svc: b.svcName };
+    if (b.date <= today && b.status !== 'booked' || b.date < today) { c.visits++; if (b.date >= c.last) { c.last = b.date; c.svc = b.svcName; c.name = b.name; c.phone = b.phone; } }
+    else if (b.status === 'booked' && (!c.next || b.date < c.next)) c.next = b.date;
+    map.set(k, c);
+  });
+  return [...map.values()].filter(c => c.visits > 0 || c.next);
+}
+const daysSince = d => Math.floor((parseYmd(ymd(new Date())) - parseYmd(d)) / 864e5);
+function clientsBlock() {
+  const all = clientList(), quiet = all.filter(c => c.last && !c.next && daysSince(c.last) >= 42).sort((a, b) => a.last.localeCompare(b.last));
+  if (!all.length) return '';
+  const row = c => `<div class="row" style="grid-template-columns:1fr auto"><span><span class="n">${esc(c.name)}</span><br><span class="s">${c.visits} visit${c.visits === 1 ? '' : 's'} · last ${c.last ? daysSince(c.last) + ' days ago' : 'not yet'}${c.next ? ' · next ' + dayWord(c.next) : ''}</span></span>${c.phone ? `<a class="btn sm ${quiet.includes(c) ? '' : 'ghost'}" target="_blank" rel="noopener" href="${waLink(c.phone, quiet.includes(c) ? `Hi ${c.name.split(' ')[0]}, it has been a little while since your last ${c.svc.toLowerCase()}. Would you like to book in? ${bookingLink()}` : 'Hi ' + c.name.split(' ')[0] + ', ')}">${quiet.includes(c) ? 'Message them' : 'WhatsApp'}</a>` : ''}</div>`;
+  return `<section class="block"><h2>Your clients</h2><p class="muted" style="margin-bottom:12px">${all.length} client${all.length === 1 ? '' : 's'}. ${quiet.length ? 'These have not been in for 6 weeks or more and have nothing booked.' : 'Nobody has gone quiet yet.'}</p>
+    ${quiet.length ? `<div class="rows">${quiet.slice(0, 20).map(row).join('')}</div>` : ''}
+    <details style="margin-top:14px"><summary class="small" style="cursor:pointer;font-weight:600">All clients</summary><div class="rows" style="margin-top:10px">${all.sort((a, b) => (b.last || b.next).localeCompare(a.last || a.next)).slice(0, 100).map(row).join('')}</div></details></section>`;
+}
+function waitlistBlock() {
+  const w = (S.waitlist || []);
+  if (!w.length) return '';
+  return `<section class="block"><h2>Waiting list</h2><p class="muted" style="margin-bottom:12px">People who could not find a time. If something opens up, message them.</p><div class="rows">${w.map(x => `<div class="row" style="grid-template-columns:1fr auto"><span><span class="n">${esc(x.name)}</span><br><span class="s">${esc(x.svc_name)} · ${x.date ? fmtLong(parseYmd(x.date)) : 'any day'}</span></span><span style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm" target="_blank" rel="noopener" href="${waLink(x.phone, `Hi ${x.name.split(' ')[0]}, a ${x.svc_name.toLowerCase()} time has opened up${x.date ? ' around ' + fmtLong(parseYmd(x.date)) : ''}. You can book it here: ${bookingLink()}`)}">Offer a time</a><button class="btn ghost sm" data-act="wl-del" data-id="${x.id}">Remove</button></span></div>`).join('')}</div></section>`;
+}
 function vReminders() {
   const R = S.reminders, sample = { name: 'Jamie Lowe', svcName: S.services[0]?.name || 'Haircut', date: ymd(addDays(new Date(), 1)), time: '10:00', price: S.services[0]?.price || 18 };
   const pend = pendingMessages();
@@ -538,6 +567,7 @@ function vReminders() {
         ${pend.length ? `<div class="rows">${pend.map((p, i) => `<div class="row" style="grid-template-columns:1fr auto"><span><span class="n">${esc(p.b.name)}</span> <span class="tag">· ${p.kind}</span><br><span class="s">${esc(p.b.svcName)}, ${dayWord(p.b.date)} at ${p.b.time}</span></span><a class="btn sm" target="_blank" rel="noopener" href="${waLink(p.b.phone, p.text)}" data-act="sent" data-id="${p.b.id}" data-key="${p.key}">Send on WhatsApp</a></div>`).join('')}</div>
         <p class="small muted" style="margin-top:12px">Tap Send and WhatsApp opens with the message written. You just press send.</p>` : `<p class="muted">Nothing to send right now. When a booking is coming up, it appears here.</p>`}
       </section>
+      ${clientsBlock()}
       <section class="block"><h2>When someone books</h2>
         <label class="check"><input type="checkbox" data-model="reminders.confirm" ${R.confirm ? 'checked' : ''}><span><b>Send a confirmation</b><span>A short message with the day and time, as soon as they book.</span></span></label>
       </section>
@@ -581,7 +611,7 @@ function vPlan() {
         ${b.status === 'paid' && b.paidUntil ? `<div class="stat"><span>Next payment, ${fmtShort(parseYmd(b.paidUntil))}</span><b>${price}</b></div>` : ''}</div>
         ${showPrice ? `<div style="margin-top:18px"><b>How to pay</b><p class="muted" style="margin-top:6px;white-space:pre-wrap">${PAYINFO ? esc(PAYINFO) : 'Pay by bank transfer. We will message you with the details before your trial ends.'}</p>${PAYINFO ? `<p class="muted" style="margin-top:6px">Use ${esc(S.biz.name)} as the reference. We record your payment by hand, so it can take a day to show here.</p>` : ''}</div>` : ''}</section>
       <section class="block"><h2>Help and feedback</h2><p class="muted" style="margin-bottom:14px">Something not working, or an idea? Tell us and we will reply to your email.</p><button class="btn ghost" data-act="feedback">Report a problem or send feedback</button></section>
-      <section class="block"><h2>Booking alerts on Telegram</h2><p class="muted" style="margin-bottom:14px">${TGON ? 'Connected. You get a message on Telegram whenever a client books through your link. Only the client name, service and time are sent.' : 'Get a Telegram message the moment a client books through your link. Free, and you can switch it off any time.'}</p><div style="display:flex;gap:10px;flex-wrap:wrap">${TGON ? '<button class="btn ghost" data-act="tg-off">Turn off alerts</button>' : '<button class="btn" data-act="tg-on">Connect Telegram</button>'}</div></section>
+      <section class="block"><h2>Booking alerts on Telegram</h2><p class="muted" style="margin-bottom:14px">${TGON ? 'Connected. You get a message on Telegram whenever a client books through your link. Only the client name, service and time are sent.' : 'Get a Telegram message the moment a client books through your link, plus a short summary at 6pm of how tomorrow looks. Free, and you can switch it off any time.'}</p><div style="display:flex;gap:10px;flex-wrap:wrap">${TGON ? '<button class="btn ghost" data-act="tg-off">Turn off alerts</button>' : '<button class="btn" data-act="tg-on">Connect Telegram</button>'}</div></section>
       <section class="block"><h2>Account</h2><p class="muted" style="margin-bottom:14px">${esc(ME || '')}</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" data-act="signout">Sign out</button><button class="btn ghost" data-act="signoutall">Sign out of every device</button><button class="btn ghost" data-act="twofa">${TWOFA ? 'Two-factor is on: manage' : 'Turn on two-factor sign-in'}</button><button class="btn danger" data-act="deleteacct">Delete my account</button></div></section>
     </div>`);
 }
@@ -640,8 +670,22 @@ function clientRender(c, { preview }) {
     const cur = withSlots.find(([d]) => d === st.date);
     body = `<button class="back" data-c="back">Back</button><div class="steps">Step 2 of 3</div><h2 class="c-h2">Pick a day and time</h2>${sum}
       <div class="days" role="group" aria-label="Day">${withSlots.map(([d, s]) => { const dd = parseYmd(d); return `<button data-c="date" data-date="${d}" class="${d === st.date ? 'on' : ''}" ${s.length ? '' : 'disabled'} aria-label="${fmtLong(dd)}">${dd.toLocaleDateString('en-GB', { weekday: 'short' })}<b>${dd.getDate()}</b>${dd.toLocaleDateString('en-GB', { month: 'short' })}</button>`; }).join('')}</div>
+      ${preview ? '' : `<button class="back" data-c="wl" style="margin-top:6px">Cannot find a time? Join the waiting list</button>`}
       ${st.window < Math.min(D.rules.ahead, 56) ? `<button class="back" data-c="more" style="margin-top:-8px">Show more days</button>` : ''}
       ${cur && cur[1].length ? `<div class="slots" role="group" aria-label="Time">${cur[1].map(t => `<button data-c="time" data-time="${t}" class="${t === st.time ? 'on' : ''}">${t}</button>`).join('')}</div><button class="btn accent" style="width:100%;min-height:52px" data-c="next2" ${st.time ? '' : 'disabled'}>Continue</button>` : `<p class="muted">No times free${st.date ? '' : ' in the next ' + st.window + ' days. Try showing more days, or message ' + esc(B.name.split(' ')[0])}.</p>`}`;
+  } else if (st.step === 5) {
+    const opts = []; for (let i = 0; i <= Math.min(D.rules.ahead, 28); i++) opts.push(ymd(addDays(new Date(), i)));
+    body = `<button class="back" data-c="back">Back</button><h2 class="c-h2">Join the waiting list</h2>${sum}
+      <p class="muted" style="margin-bottom:16px">Tell ${esc(B.name.split(' ')[0])} when you could come and they will message you if a time opens up. This does not book you in.</p>
+      <form data-c="wlform" novalidate>
+        <label class="field"><span>Your name</span><input type="text" name="name" autocomplete="name" value="${esc(st.name)}" required></label>
+        <label class="field"><span>Mobile number</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" value="${esc(st.phone)}" placeholder="e.g. 07123 456789" required></label>
+        <label class="field"><span>Best day</span><select name="date"><option value="">Any day</option>${opts.map(d => `<option value="${d}">${fmtLong(parseYmd(d))}</option>`).join('')}</select></label>
+        <p class="err" id="cerr" hidden></p>
+        <button class="btn accent" style="width:100%;min-height:52px">Join the waiting list</button>
+      </form>`;
+  } else if (st.step === 6) {
+    body = `<div class="done-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h2 class="c-h2" style="font-size:28px">You are on the list</h2><p class="muted">${esc(B.name.split(' ')[0])} will message you on WhatsApp if a time opens up.</p><div class="stack"><button class="btn ghost" style="min-height:52px" data-c="home">Back to the booking page</button></div>`;
   } else if (st.step === 3) {
     body = `<button class="back" data-c="back">Back</button><div class="steps">Step 3 of 3</div><h2 class="c-h2">Your details</h2>${sum}
       <div class="summary" style="margin-top:-8px"><span>${fmtLong(parseYmd(st.date))}</span><b style="font-weight:600">${st.time}</b></div>
@@ -667,7 +711,9 @@ function clientRender(c, { preview }) {
     const t = e.target.closest('[data-c]'); if (!t) return;
     const k = t.dataset.c;
     if (k === 'svc') { cf.svc = t.dataset.id; cf.step = 2; cf.date = null; cf.time = null; }
-    else if (k === 'back') { cf.step = cf.step === 3 ? 2 : 1; cf.time = cf.step === 1 ? null : cf.time; }
+    else if (k === 'wl') { cf.step = 5; }
+    else if (k === 'home') { cf.step = 1; cf.svc = null; cf.date = null; cf.time = null; }
+    else if (k === 'back') { cf.step = cf.step === 3 || cf.step === 5 ? 2 : 1; cf.time = cf.step === 1 ? null : cf.time; }
     else if (k === 'date') { cf.date = t.dataset.date; cf.time = null; }
     else if (k === 'time') { cf.time = t.dataset.time; }
     else if (k === 'more') { cf.window = Math.min(56, cf.window + 14); }
@@ -678,6 +724,16 @@ function clientRender(c, { preview }) {
   };
   c.onsubmit = async e => {
     e.preventDefault();
+    if (e.target.dataset.c === 'wlform') {
+      const f = e.target.elements, name = f.name.value.trim(), phone = f.phone.value.trim(), err = $('#cerr', c);
+      cf.name = name; cf.phone = phone;
+      if (!name) { err.textContent = 'Add your name.'; err.hidden = false; return; }
+      if (normPhone(phone).replace(/\D/g, '').length < 10) { err.textContent = 'Add a mobile number so we can reach you.'; err.hidden = false; return; }
+      e.target.querySelector('button.btn').disabled = true;
+      const r = await api('POST', `/api/public/${P.biz.slug}/waitlist`, { svcId: cf.svc, date: f.date.value, name, phone });
+      if (r.ok) { cf.step = 6; clientRender(c, {}); window.scrollTo(0, 0); return; }
+      e.target.querySelector('button.btn').disabled = false; err.textContent = r.data && r.data.error === 'list_full' ? 'The waiting list is full right now. Please message them directly.' : r.status === 429 ? 'Too many tries. Please wait a little.' : 'Something went wrong. Please try again.'; err.hidden = false; return;
+    }
     const f = e.target.elements, name = f.name.value.trim(), phone = f.phone.value.trim(), err = $('#cerr', c), btn = e.target.querySelector('button.btn');
     cf.name = name; cf.phone = phone; cf.note = f.note.value.trim();
     if (!name) { err.textContent = 'Add your name.'; err.hidden = false; return; }
@@ -735,6 +791,8 @@ document.addEventListener('click', e => {
   else if (a === 'addsvc') { S.services.push({ id: uid(), name: 'New service', mins: 30, price: 15, deposit: 0, desc: '', hidden: false }); save(); $('#svclist').innerHTML = svcRows(); renderPreview(); }
   else if (a === 'rmsvc') { S.services = S.services.filter(x => x.id !== id); save(); $('#svclist').innerHTML = svcRows(); renderPreview(); }
   else if (a === 'token') { const ta = $('#tpl'); const p = ta.selectionStart ?? ta.value.length; ta.value = ta.value.slice(0, p) + t.dataset.t + ta.value.slice(ta.selectionEnd ?? p); S.reminders.template = ta.value; save(); refreshBubble(); ta.focus(); }
+  else if (a === 'wl-del') { api('DELETE', '/api/waitlist/' + id).then(r => { if (r.ok) { S.waitlist = (S.waitlist || []).filter(x => x.id !== id); route(); toast('Removed from the waiting list'); } else toast(failMsg(r)); }); }
+  else if (a === 'qr-png') { qrDownload(); }
   else if (a === 'sent') { patchBooking(id, { [t.dataset.key]: true }).then(() => setTimeout(route, 400)); }
   else if (a === 'pay') toast('Payments aren’t switched on yet.');
   else if (a === 'signout') signOut();
@@ -952,8 +1010,9 @@ addEventListener('pagehide', () => { if (saveTimer) flush(); });
 async function refreshBookings() {
   if (!ME || !S || document.hidden) return;
   const r = await api('GET', '/api/me'); if (!r.ok || !r.data.email || !S) return;
-  const sig = list => list.map(b => [b.id, b.status, b.reminded, b.confirmed].join()).join('|');
-  if (sig(r.data.bookings) === sig(S.bookings)) return;
+  const sig = list => list.map(b => [b.id, b.status, b.reminded, b.confirmed].join()).join('|'), wsig = l => (l || []).map(x => x.id).join();
+  const wlChanged = wsig(r.data.waitlist) !== wsig(S.waitlist); if (wlChanged) S.waitlist = r.data.waitlist || [];
+  if (sig(r.data.bookings) === sig(S.bookings) && !wlChanged) return;
   const have = new Set(S.bookings.map(b => b.id)), fresh = r.data.bookings.filter(b => !have.has(b.id) && b.source === 'link');
   S.bookings = r.data.bookings;
   if (fresh.length === 1) toast(`New booking: ${fresh[0].name}, ${fresh[0].svcName}, ${dayWord(fresh[0].date)} at ${fresh[0].time}`);
@@ -965,3 +1024,20 @@ setInterval(refreshBookings, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshBookings(); });
 applyDesign();
 loadMe().then(route);
+
+/* ---------- QR code for the booking link (the generator is loaded only when this page is opened) ---------- */
+function loadQr() {
+  const box = $('#qrbox'); if (!box) return;
+  const draw = () => { try { box.innerHTML = window.BookableQR.svg(bookingLink(), 200); } catch (e) { box.textContent = 'Could not draw the code'; } };
+  if (window.BookableQR) return draw();
+  const s = document.createElement('script'); s.src = '/qr.js'; s.onload = draw; document.head.appendChild(s);
+}
+function qrDownload() {
+  if (!window.BookableQR) return toast('One moment, still loading');
+  const img = new Image(), svg = window.BookableQR.svg(bookingLink(), 1000);
+  img.onload = () => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 1000; cv.getContext('2d').drawImage(img, 0, 0, 1000, 1000);
+    cv.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'booking-qr-code.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); });
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}

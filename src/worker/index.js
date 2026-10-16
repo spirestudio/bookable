@@ -34,11 +34,29 @@ export default {
       await env.DB.prepare('DELETE FROM sessions WHERE expires < ?').bind(Date.now()).run();
       await env.DB.prepare('DELETE FROM rl WHERE ts < ?').bind(Date.now() - 864e5).run();
       await expireDeposits(env);
+      await env.DB.prepare("DELETE FROM waitlist WHERE (date != '' AND date < ?) OR created < ?").bind(dayOf(Date.now() - 864e5), Date.now() - 60 * 864e5).run();
       await env.DB.prepare('DELETE FROM visits WHERE day < ?').bind(dayOf(Date.now() - 120 * 864e5)).run();
     }
+    try { await dailySummary(env, event.scheduledTime || Date.now()); } catch (e) { console.error('summary error', e && e.message); }
     try { await indexNow(env, new URL(siteConfig.url).hostname, siteConfig.indexNowKey); } catch (e) { console.error('indexnow error', e && e.message); }
   },
 };
+
+/* ---------- evening summary on Telegram: at 18:00 UK time, owners who connected Telegram hear how tomorrow looks. Sent once a day. ---------- */
+async function dailySummary(env, at) {
+  const p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(at)), g = t => p.find(x => x.type === t).value;
+  if (+g('hour') !== +(env.SUMMARY_HOUR || 18)) return;
+  const today = `${g('year')}-${g('month')}-${g('day')}`;
+  const done = await env.DB.prepare("SELECT v FROM settings WHERE k = 'tgsum_last'").first(); if (done && done.v === today) return;
+  await env.DB.prepare("INSERT INTO settings (k, v) VALUES ('tgsum_last', ?1) ON CONFLICT(k) DO UPDATE SET v = ?1").bind(today).run();
+  const tomorrow = new Date(Date.parse(today + 'T12:00:00Z') + 864e5).toISOString().slice(0, 10);
+  const users = (await env.DB.prepare('SELECT id, tg_chat FROM users WHERE tg_chat IS NOT NULL').all()).results;
+  for (const u of users) {
+    const bs = (await env.DB.prepare("SELECT start, name, svc_name FROM bookings WHERE user_id = ? AND date = ? AND status = 'booked' AND source != 'sample' ORDER BY start").bind(u.id, tomorrow).all()).results;
+    if (!bs.length) continue;
+    await sendTelegram(env, u.tg_chat, `🗓 Tomorrow (${niceDay(tomorrow)}): ${bs.length} booking${bs.length === 1 ? '' : 's'}. First at ${fromMin(bs[0].start)} (${bs[0].name}, ${bs[0].svc_name}).`);
+  }
+}
 
 /* ---------- visit counts: public pages only, one counter per day, page and source. Nothing about the visitor is stored. ---------- */
 const BOT = /bot|crawl|spider|slurp|preview|monitor|curl|wget|python|node|axios|headless|lighthouse|facebookexternalhit|whatsapp/i;
@@ -286,6 +304,25 @@ async function handle(req, env, ctx) {
     return json({ booking: { ...(dep ? { deposit: dep, depositDue: due, depositInfo: doc.biz.depositInfo } : {}), id: b.id, svcName: b.svcName, mins: b.mins, price: b.price, date: b.date, time: body.time, name, phone, note } }, 201);
   }
 
+  if ((m = path.match(/^\/api\/public\/([a-z0-9-]{3,40})\/waitlist$/)) && method === 'POST') {
+    if (await isLimited(env, 'wl:' + ip, 6, 3600)) throw new HttpError(429, 'slow_down');
+    const p = await env.DB.prepare('SELECT user_id, doc FROM profiles WHERE slug = ?').bind(m[1]).first();
+    if (!p) throw new HttpError(404, 'not_found');
+    const doc = JSON.parse(p.doc), body = await readJson(req, 2000);
+    const svc = doc.services.find(s => s.id === body.svcId && !s.hidden); if (!svc) throw new HttpError(422, 'invalid_service');
+    const date = body.date === '' || body.date === undefined || body.date === null ? '' : body.date;
+    if (date && (!validDate(date) || date < londonNow().date)) throw new HttpError(422, 'invalid_time');
+    const name = str(body.name, 1, 80, 'name'), phone = str(body.phone, 6, 25, 'phone');
+    if (normPhone(phone).replace(/\D/g, '').length < 10) throw new HttpError(422, 'invalid_phone');
+    const n = (await env.DB.prepare('SELECT COUNT(*) c FROM waitlist WHERE user_id = ?').bind(p.user_id).first()).c;
+    if (n >= 60) throw new HttpError(409, 'list_full');
+    const dup = await env.DB.prepare('SELECT id FROM waitlist WHERE user_id = ? AND phone = ? AND svc_id = ? AND date = ?').bind(p.user_id, normPhone(phone), svc.id, date).first();
+    if (!dup) await env.DB.prepare('INSERT INTO waitlist (id, user_id, svc_id, svc_name, date, name, phone, created) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(crypto.randomUUID(), p.user_id, svc.id, svc.name, date, name, normPhone(phone), Date.now()).run();
+    await record(env, 'wl:' + ip);
+    if (!dup) ctx.waitUntil(alertOwner(env, p.user_id, `⏳ Waiting list: ${name} · ${svc.name} · ${date ? niceDay(date) : 'any day'}`));
+    return json({ ok: true }, 201);
+  }
+
   /* ----- admin (owner only: ADMIN_EMAIL and ADMIN_PASSWORD secrets) ----- */
   if (path.startsWith('/api/admin')) return await adminRoutes(req, env, url, path, method, ip, ctx);
 
@@ -416,9 +453,11 @@ async function handle(req, env, ctx) {
     await expireDeposits(env, user.id);
     const p = await env.DB.prepare('SELECT doc FROM profiles WHERE user_id = ?').bind(user.id).first();
     const rows = (await env.DB.prepare('SELECT * FROM bookings WHERE user_id = ? ORDER BY date, start LIMIT 3000').bind(user.id).all()).results;
+    const waitlist = (await env.DB.prepare('SELECT id, svc_name, date, name, phone, created FROM waitlist WHERE user_id = ? ORDER BY created LIMIT 100').bind(user.id).all()).results;
     const uRow = await env.DB.prepare('SELECT created, totp_on, tg_chat FROM users WHERE id = ?').bind(user.id).first(), bs = billingState(uRow.created, await getBilling(env, user.id), londonNow().date), st = await getSettings(env);
-    return json({ twofa: !!uRow.totp_on, telegram: !!uRow.tg_chat, admin: !!env.ADMIN_EMAIL && user.email.toLowerCase() === env.ADMIN_EMAIL.trim().toLowerCase(), email: user.email, doc: p ? JSON.parse(p.doc) : null, bookings: rows.map(rowToBooking), billing: { enforce: st.paywall === 'on', status: bs.status, plan: bs.plan, price: bs.price, paidUntil: bs.paidUntil, trialEnd: bs.trialEnd, daysLeft: bs.daysLeft, overdueDays: bs.overdueDays }, payInfo: st.payInfo });
+    return json({ twofa: !!uRow.totp_on, telegram: !!uRow.tg_chat, waitlist, admin: !!env.ADMIN_EMAIL && user.email.toLowerCase() === env.ADMIN_EMAIL.trim().toLowerCase(), email: user.email, doc: p ? JSON.parse(p.doc) : null, bookings: rows.map(rowToBooking), billing: { enforce: st.paywall === 'on', status: bs.status, plan: bs.plan, price: bs.price, paidUntil: bs.paidUntil, trialEnd: bs.trialEnd, daysLeft: bs.daysLeft, overdueDays: bs.overdueDays }, payInfo: st.payInfo });
   }
+  if ((m = path.match(/^\/api\/waitlist\/([0-9a-f-]{36})$/)) && method === 'DELETE') { await env.DB.prepare('DELETE FROM waitlist WHERE id = ? AND user_id = ?').bind(m[1], user.id).run(); return json({ ok: true }); }
   if (path === '/api/telegram/link' && method === 'POST') {
     if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_WEBHOOK_SECRET) throw new HttpError(503, 'unavailable');
     if (await isLimited(env, 'tglink:' + user.id, 10, 3600)) throw new HttpError(429, 'slow_down');
@@ -531,7 +570,7 @@ async function handle(req, env, ctx) {
   }
   if (path === '/api/account' && method === 'DELETE') {
     await env.DB.batch([
-      env.DB.prepare('DELETE FROM bookings WHERE user_id = ?').bind(user.id), env.DB.prepare('DELETE FROM profiles WHERE user_id = ?').bind(user.id),
+      env.DB.prepare('DELETE FROM bookings WHERE user_id = ?').bind(user.id), env.DB.prepare('DELETE FROM waitlist WHERE user_id = ?').bind(user.id), env.DB.prepare('DELETE FROM profiles WHERE user_id = ?').bind(user.id),
       env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(user.id), env.DB.prepare('DELETE FROM billing WHERE user_id = ?').bind(user.id), env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id),
     ]);
     return new Response(null, { status: 204, headers: { 'set-cookie': setCookie(url, '', 0), 'cache-control': 'no-store' } });
@@ -588,6 +627,7 @@ async function sendTelegram(env, chatId, text) {
 async function alertOwner(env, userId, text) {
   try { const r = await env.DB.prepare('SELECT tg_chat FROM users WHERE id = ?').bind(userId).first(); if (r && r.tg_chat) await sendTelegram(env, r.tg_chat, text); } catch { /* best effort */ }
 }
+const niceDay = date => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(date + 'T00:00:00Z'));
 const niceWhen = (date, time) => new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(date + 'T00:00:00Z')) + ' at ' + time;
 const maskEmail = e => { const [u, d] = String(e).split('@'); return (u ? u[0] : '?') + '***@' + (d || '?'); };
 async function notify(env, text) {
@@ -728,7 +768,7 @@ async function adminRoutes(req, env, url, path, method, ip, ctx) {
       return json({ billing, payments: pays.map(p => ({ id: p.id, amount: p.amount, method: p.method, paidOn: p.paid_on, note: p.note })), id: u.id, email: u.email, created: u.created, slug: u.slug, biz: d && { name: d.biz.name, town: d.biz.town, phone: d.biz.phone }, trade: d && d.trade, services: d ? d.services.map(s => ({ name: s.name, mins: s.mins, price: s.price, hidden: !!s.hidden })) : [], sessions: sess.c, bookings: bks.map(b => ({ id: b.id, date: b.date, time: fromMin(b.start), mins: b.mins, svc: b.svc_name, price: b.price, status: b.status, source: b.source })) });
     }
     if (method === 'DELETE') {
-      await env.DB.batch([env.DB.prepare('DELETE FROM bookings WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM profiles WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM billing WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM users WHERE id = ?').bind(m[1])]);
+      await env.DB.batch([env.DB.prepare('DELETE FROM bookings WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM waitlist WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM profiles WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM billing WHERE user_id = ?').bind(m[1]), env.DB.prepare('DELETE FROM users WHERE id = ?').bind(m[1])]);
       return json({ ok: true });
     }
   }

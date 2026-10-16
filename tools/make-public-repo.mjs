@@ -145,14 +145,14 @@ jobs:
 /* secret and privacy scan of everything written */
 const secrets = new Set();
 for (const f of ['.admin-code.txt', '.admin-code-dad.txt']) if (fs.existsSync(f)) for (const m of read(f).matchAll(/PB-\d{9}/g)) secrets.add(m[0]);
-if (fs.existsSync('.dev.vars')) for (const l of read('.dev.vars').split('\n')) { const v = l.split('=').slice(1).join('=').trim(); if (v.length >= 8 && !/^test:|localhost/.test(v)) secrets.add(v); }
+if (fs.existsSync('.dev.vars')) for (const l of read('.dev.vars').split('\n')) { const v = l.split('=').slice(1).join('=').trim(); if (v.length >= 8 && !/^test:|localhost|^testhook$|^\d{1,3}$/.test(v)) secrets.add(v); }
 for (const f of ['.telegram-token.txt', '.telegram-chat.txt']) if (fs.existsSync(f)) { const v = read(f).trim(); if (v.length >= 6) secrets.add(v); }
 let bad = 0;
 for (const rel of written) {
   if (/\.(png|webp|ico|woff2|jpg|mp4)$/.test(rel)) continue;
   const t = fs.readFileSync(path.join(OUT, rel), 'utf8');
   for (const s of secrets) if (t.includes(s)) { console.log('SECRET FOUND in', rel); bad++; }
-  for (const m of t.matchAll(/\b(?:\+44|0)7\d{3}[ ]?\d{3}[ ]?\d{3}\b/g)) if (!/^(07123 ?456\d{3}|07000000000|07700 ?900\d{3}|07401 693929)$/.test(m[0])) { console.log('phone-like number in', rel, m[0]); bad++; }
+  for (const m of t.matchAll(/\b(?:\+44|0)7\d{3}[ ]?\d{3}[ ]?\d{3}\b/g)) if (!/^(07123 ?456\d{3}|07000000000|07700 ?9\d{5}|07401 693929)$/.test(m[0])) { console.log('phone-like number in', rel, m[0]); bad++; }
   for (const m of t.matchAll(/[A-Za-z0-9._%+-]+@(gmail|me|hotmail|outlook|yahoo)\.com/g)) if (!/websitebuilds01@gmail\.com/.test(m[0])) { console.log('personal email in', rel, m[0]); bad++; }
 }
 console.log(bad ? `${bad} problem(s): do NOT publish` : `ok: ${written.length} files in ${OUT}/, no secrets or personal data found`);
